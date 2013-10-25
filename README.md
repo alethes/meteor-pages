@@ -12,7 +12,7 @@ Features
 + **Neighbor prefetching**. After loading the current page, it prefetches the neighbors to ensure seamless transition.
 + **Request throttling**. Allows you to limit how often the page can be changed.
 + **Easy integration**. The package works out of the box. Pages changes are triggered by one session variable.
-+ **Bootstrap 2/3-compatible navigation template**. Can be styled easily without Bootstrap as well.
++ **Bootstrap 2/3-compatible navigation template**. The package itself borrows some CSS from Bootstrap 3 to ensure good looks without dependency, but can be re-styled easily.
 + **Failure resistance**. Accounts for multiple scenarios of failure.
 + **Built-in iron-router integration**. Easy binding to any other router.
 + **Trivial customization**. Items per page, sorting, filters and more adjustable on the fly! Just modify a setting and see the pagination redrawing.
