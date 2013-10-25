@@ -108,6 +108,10 @@ mrt add iron-router
 mrt add bootstrap-3 (optional)
 ```
 
-TODOs
+Todos
 -----
-+ Infinite scrolling (easy)
++ Infinite scrolling
++ Facilitate creating more than one Pagination instance per page
++ Option to preserve the old page until new one is loaded
++ Handling dynamically incoming data with timestamp field
++ Other pagination styles
