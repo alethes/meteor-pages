@@ -1,0 +1,19 @@
+
+<template name="paginate">
+  {{#if ready}}
+  {{#each items}}
+  {{{item}}}
+  {{/each}}
+  {{else}}
+  <div style="text-align:center"><img src="/packages/paginate/loader.gif"/></div>{{/if}}
+</template>
+<template name="paginateNav">{{#if show}}
+  <div style="text-align:center" class="pagination-cont">
+    <ul class="pagination">{{#each paginationNeighbors}}
+      <li class="{{active}} {{disabled}}"><a>{{p}}</a></li>{{/each}}
+    </ul>
+  </div>{{/if}}
+</template>
+<template name="item">
+  <h2 style="margin:5px 40px; padding: 10px; border: 1px solid #999; border-radius: 15px;">{{name}}</h2>
+</template>
