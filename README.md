@@ -63,10 +63,11 @@ Settings can be passed as a second argument to `Meteor.Paginate()`. Almost all c
 ```
 2. Client-side
 ```
-Pages.set
-    perPage: 10
+Pages.set({
+    perPage: 10,
     sort: 
-        title: -1
+        {title: -1}
+})
 ```
 
 Available to the client:
