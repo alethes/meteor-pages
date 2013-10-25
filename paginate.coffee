@@ -25,6 +25,7 @@ Meteor.Pagination.prototype =
   perPage: 10
   route: "/page/"
   router: false
+  routerTemplate: "pages"
   sort: {}
   #maxChangeRate: 1000
   availableSettings:
@@ -72,7 +73,6 @@ Meteor.Pagination.prototype =
             path: "/"
             template: @routerTemplate
             onBeforeRun: ->
-                console.log 'mtfk'
                 Session.set "paginate.currentPage", 1
         @route "page",
             path: pr

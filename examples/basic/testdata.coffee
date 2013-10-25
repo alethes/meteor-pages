@@ -1,5 +1,5 @@
+@Items = Pages.Collection
 if Meteor.isServer
-    @Items = Pages.Collection
     Meteor.startup ->
       if @Items.find().count() isnt 500
         @Items.remove {}

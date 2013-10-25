@@ -14,6 +14,7 @@ Features
 + **Easy integration**. The package works out of the box. Pages changes are triggered by one session variable.
 + **Bootstrap 2/3-compatible navigation template**. Can be styled easily without Bootstrap as well.
 + **Failure resistance**. Accounts for multiple scenarios of failure.
++ **Built-in iron-router integration**. Easy binding to any other router.
 + **Trivial customization**. Items per page, sorting, filters and more adjustable on the fly! Just modify a setting and see the pagination redrawing.
 
 Usage
