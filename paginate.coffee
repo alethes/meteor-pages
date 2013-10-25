@@ -18,6 +18,7 @@ Meteor.Pagination = (collection, settings = {}) ->
 Meteor.Pagination.prototype =
   filters: {}
   dataMargin: 3
+  infinite: false
   itemTemplate: "paginateItemDefault"
   navShowFirst: false
   navShowLast: false
@@ -99,12 +100,13 @@ Meteor.Pagination.prototype =
     if p == true or p is @currentPage() and Session?
       @sess "ready", true
   loading: (p) ->
-    for k, v of @subscriptions
-      @subscriptions[k].stop()
-      delete @subscriptions[k]
-    @_ready = false
-    if p is @currentPage() and Session?
-      @sess "ready", false
+    unless @infinite
+      for k, v of @subscriptions
+        @subscriptions[k].stop()
+        delete @subscriptions[k]
+      @_ready = false
+      if p is @currentPage() and Session?
+        @sess "ready", false
   logRequest: (p) ->
     @loading p
     unless p in @pagesRequested
@@ -233,7 +235,7 @@ Meteor.Pagination.prototype =
       Otherwise, the same data shows up on every newly requested page.
       """
       if @_ready and (
-        @Collection.find().count() > @perPage or 
+        (not @infinite and @Collection.find().count() > @perPage) or 
         (@cache[p] is 0 and p <= @sess "totalPages")
         )
         #console.log 'rl1'
