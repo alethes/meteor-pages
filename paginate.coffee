@@ -19,6 +19,8 @@ Meteor.Pagination.prototype =
   filters: {}
   dataMargin: 3
   itemTemplate: "paginateItemDefault"
+  navShowFirst: false
+  navShowLast: false
   onReloadPage1: false
   pageSizeLimit: 60 #Unavailable to the client
   paginationMargin: 3
@@ -32,6 +34,8 @@ Meteor.Pagination.prototype =
     dataMargin: Number
     filters: Object
     itemTemplate: String
+    navShowFirst: Boolean
+    navShowLast: Boolean
     onReloadPage1: Boolean
     paginationMargin: Number
     perPage: Number
@@ -280,8 +284,14 @@ Meteor.Pagination.prototype =
     from = 1 if from < 1
     to = total if to > total
     n = []
-    n.push
+    if @navShowFirst
+      n.push
         p: "«"
+        n: 1
+        active: ""
+        disabled: if page == 1 then "disabled" else ""
+    n.push
+        p: "<"
         n: page - 1
         active: ""
         disabled: if page == 1 then "disabled" else ""
@@ -292,10 +302,16 @@ Meteor.Pagination.prototype =
         active: if p == page then "active" else ""
         disabled: if page > total then "disabled" else ""
     n.push
-        p: "»"
+        p: ">"
         n: page + 1
         active: ""
         disabled: if page >= total then "disabled" else ""
+    if @navShowLast
+      n.push
+          p: "»"
+          n: total
+          active: ""
+          disabled: if page >= total then "disabled" else ""
     n
   onNavClick: (n, p) ->
     cpage = @currentPage()
