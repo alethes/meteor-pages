@@ -75,7 +75,7 @@ Available to the client:
 + **filters (*Object*, default = {})** - MongoDB find query object, eg. `{name: {$lt: 5}}`
 + **itemTemplate (*String*, default = "paginateItemDefault")** - name of the template to use for items. The default template simply lists all attributes of an item
 + **navShowFirst (*Boolean*, default = false)** - whether to show the link to the first page («) in the navigation panel
-+ **navShowLast (*Boolean*, default = false)** - whether to show the link to the last page (»)
++ **navShowLast (*Boolean*, default = false)** - whether to show the link to the last page (») in the navigation panel
 + **onReloadPage1 (*Boolean*, default = false)** - determines whether to navigate to page 1 after reloading caused by a change in settings (eg. new sorting order)
 + **paginationMargin (*Number*, default = 3)** - the number of neighboring pages to display on each side of the navigation panel
 + **perPage (*Number*, default = 10)** - number of items to display per page (can't be larger than server-imposed **pageSizeLimit**)
