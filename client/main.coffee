@@ -1,13 +1,10 @@
-@p = (p) ->
-    Session.set "paginate.currentPage", p
-@P = @Paginate
-p = Template.paginate
-p.ready = ->
-    Session.get "paginate.ready"
-p.items = ->
-    Paginate.getPage Session.get "paginate.currentPage"
-p.item = ->
-    Template[Paginate.itemTemplate] @
+_.extend Template.paginate,
+    ready: ->
+        Session.get "paginate.ready"
+    items: ->
+        Paginate.getPage Session.get "paginate.currentPage"
+    item: ->
+        Template[Paginate.itemTemplate] @
 
 _.extend Template.paginateNav,
     show: ->
@@ -19,3 +16,14 @@ _.extend Template.paginateNav,
         "click a": _.throttle ( ->
             Paginate.onNavClick.call Paginate, @n, @p
         ), 1000
+
+_.extend Template.paginateItemDefault,
+    properties: ->
+        A = []
+        console.log @
+        for k, v of @
+            unless k is "_id"
+                A.push
+                    name: k
+                    value: v
+        A

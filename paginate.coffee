@@ -42,7 +42,7 @@ _Paginate.prototype =
     sort: Object
     onReloadPage1: Boolean
     itemTemplate: Object
-  itemTemplate: "item"
+  itemTemplate: "paginateItemDefault"
   _set: (k, v) ->
     if k of @availableSettings
       check v, @availableSettings[k]

@@ -17,5 +17,10 @@ template(name="paginateNav")
                 a {{p}}
             {{/each}}
     {{/if}}
-template(name="item")
-    h2(style="margin:5px 40px; padding: 10px; border: 1px solid #999; border-radius: 15px;") {{name}}
+template(name="paginateItemDefault")
+    div(style="margin:5px 40px; padding: 10px; border: 1px solid #999; border-radius: 15px;")
+        {{#each properties}}
+        div
+            i {{name}}
+            |: {{value}}
+        {{/each}}

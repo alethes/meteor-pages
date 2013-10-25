@@ -14,6 +14,8 @@
     </ul>
   </div>{{/if}}
 </template>
-<template name="item">
-  <h2 style="margin:5px 40px; padding: 10px; border: 1px solid #999; border-radius: 15px;">{{name}}</h2>
+<template name="paginateItemDefault">
+  <div style="margin:5px 40px; padding: 10px; border: 1px solid #999; border-radius: 15px;">{{#each properties}}
+    <div><i>{{name}}</i>: {{value}}</div>{{/each}}
+  </div>
 </template>
