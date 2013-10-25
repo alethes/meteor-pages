@@ -3,6 +3,7 @@ Meteor Paginate
 
 State of the art, out of the box Meteor pagination.
 ---------------------------------------------------
+Live demo: [http://pages.meteor.com/](http://pages.meteor.com/)
 
 Features
 --------
@@ -17,8 +18,13 @@ Features
 + **Built-in iron-router integration**. Easy binding to any other router.
 + **Trivial customization**. Items per page, sorting, filters and more adjustable on the fly! Just modify a setting and see the pagination redrawing.
 
-Usage
------
+Installation
+------------
+Meteorite:
+`mrt add pages`
+
+Basic usage
+-----------
 Coffeescript:
 
 `@Paginate = Meteor.Paginate "collection-name"`
@@ -39,6 +45,22 @@ and HTML:
     {{> paginateNav}}
 </body>
 ```
+
+Settings
+--------
+
++ dataMargin *Number*
++ filters *Object*
++ itemTemplate *String*
++ onReloadPage1 *Boolean*
++ paginationMargin *Number*
++ perPage *Number*
++ prependRoute *String*
++ route *String*
++ router *String or Boolean*
++ routerTemplate *String*
++ sort: *Object*
+
 
 Examples
 --------
