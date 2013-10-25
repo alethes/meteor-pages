@@ -17,35 +17,34 @@ Meteor.Pagination = (collection, settings = {}) ->
   return @
 
 Meteor.Pagination.prototype =
-  style: "bootstrap"
-  _currentPage: 1
-  dataMargin: 3
-  paginationMargin: 3
-  onReloadPage1: false
   filters: {}
-  sort: {}
-  _ready: true
+  dataMargin: 3
   itemTemplate: "paginateItemDefault"
+  onReloadPage1: false
+  pageSizeLimit: 30 #Not available to the client
+  paginationMargin: 3
   perPage: 10
-  pageSizeLimit: 30
   prependRoute: "/"
+  sort: {}
+  #maxChangeRate: 1000
+  availableSettings:
+    dataMargin: Number
+    filters: Object
+    itemTemplate: String
+    onReloadPage1: Boolean
+    paginationMargin: Number
+    perPage: Number
+    prependRoute: String
+    sort: Object
+  _ready: true
+  _currentPage: 1
   cache: {}
   waiters: {}
   timeouts: {}
-  counters: {}
   subscriptions: {}
   queue: []
   pagesRequested: []
   pagesReceived: []
-  #maxChangeRate: 1000
-  availableSettings:
-    perPage: Number
-    dataMargin: Number
-    paginationMargin: Number
-    filters: Object
-    sort: Object
-    onReloadPage1: Boolean
-    itemTemplate: Object
   methods:
     "countPages": ->
       Math.ceil @Collection.find(@filters, 
