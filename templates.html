@@ -5,12 +5,12 @@
   {{{item}}}
   {{/each}}
   {{else}}
-  <div style="text-align:center"><img src="/packages/paginate/loader.gif"/></div>{{/if}}
+  <div style="text-align:center"><img src="/packages/pages/loader.gif"/></div>{{/if}}
 </template>
 <template name="paginateNav">{{#if show}}
   <div style="text-align:center" class="pagination-cont">
     <ul class="pagination">{{#each paginationNeighbors}}
-      <li class="{{active}} {{disabled}}"><a>{{p}}</a></li>{{/each}}
+      <li class="{{active}} {{disabled}}"><a href="{{link}}">{{p}}</a></li>{{/each}}
     </ul>
   </div>{{/if}}
 </template>

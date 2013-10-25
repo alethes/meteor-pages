@@ -5,7 +5,7 @@ template(name="paginate")
     {{/each}}
     {{else}}
     div(style="text-align:center")
-        img(src="/packages/paginate/loader.gif")
+        img(src="/packages/pages/loader.gif")
     {{/if}}
 
 template(name="paginateNav")
@@ -14,7 +14,7 @@ template(name="paginateNav")
         ul.pagination
             {{#each paginationNeighbors}}
             li(class="{{active}} {{disabled}}")
-                a {{p}}
+                a(href="{{link}}") {{p}}
             {{/each}}
     {{/if}}
 template(name="paginateItemDefault")

@@ -20,6 +20,10 @@ Package.on_use(function(api){
     ], "server");
 
     api.add_files([
+        "paginate.coffee"
+    ], ["client", "server"]);
+
+    api.add_files([
         "templates.html",
         "client/main.coffee",
         "loader.gif"
@@ -30,5 +34,4 @@ Package.on_use(function(api){
         "_PaginateInstances"
     ], ["client", "server"]);
     */
-    api.add_files("paginate.coffee", ["client", "server"]);
 });

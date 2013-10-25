@@ -4,13 +4,12 @@ Meteor.Pagination = (collection, settings = {}) ->
   #@tGetPage = _.throttle @getPage.bind(@), 1000
   for key, value of settings
     @set key, value
+  @setRouter()
   if Meteor.isServer
     @setMethods()
     Meteor.publish @name, @_getPage.bind @
   else
-    Meteor.call "countPages", ((e, r) ->
-      @sess "totalPages", r
-    ).bind(@)
+    @countPages()
     @watchman()
     @sess "currentPage", 1
     @sess "ready", true
@@ -24,7 +23,8 @@ Meteor.Pagination.prototype =
   pageSizeLimit: 30 #Not available to the client
   paginationMargin: 3
   perPage: 10
-  prependRoute: "/"
+  route: "/page/"
+  router: false
   sort: {}
   #maxChangeRate: 1000
   availableSettings:
@@ -35,6 +35,9 @@ Meteor.Pagination.prototype =
     paginationMargin: Number
     perPage: Number
     prependRoute: String
+    route: String
+    router: true #Any type. Use only in comparisons. String or Boolean expected
+    routerTemplate: String
     sort: Object
   _ready: true
   _currentPage: 1
@@ -45,6 +48,7 @@ Meteor.Pagination.prototype =
   queue: []
   pagesRequested: []
   pagesReceived: []
+  currentSubscription: null
   methods:
     "countPages": ->
       Math.ceil @Collection.find(@filters, 
@@ -60,6 +64,25 @@ Meteor.Pagination.prototype =
     for n, f of @methods
       @methods[n] = f.bind @
     Meteor.methods @methods
+  setRouter: ->
+    if @router is "iron-router"
+      pr = "#{@route}:n"
+      Router.map ->
+        @route "home",
+            path: "/"
+            template: @routerTemplate
+            onBeforeRun: ->
+                console.log 'mtfk'
+                Session.set "paginate.currentPage", 1
+        @route "page",
+            path: pr
+            template: @routerTemplate
+            onBeforeRun: ->
+                Session.set "paginate.currentPage", parseInt(@params.n)
+  countPages: ->  
+    Meteor.call "countPages", ((e, r) ->
+      @sess "totalPages", r
+    ).bind(@)
   currentPage: ->
     if Meteor.isClient and @sess("currentPage")?
       @sess "currentPage"
@@ -110,7 +133,8 @@ Meteor.Pagination.prototype =
     true
   _set: (k, v) ->
     if k of @availableSettings
-      check v, @availableSettings[k]
+      if @availableSettings[k] isnt true
+        check v, @availableSettings[k]
       @[k] = v
     else
       new Meteor.Error 400, "Setting not available."
@@ -129,6 +153,7 @@ Meteor.Pagination.prototype =
     @pagesReceived = []
   onData: (page) ->
     #console.log page, 'READY', (if isCurrent then " (current)" else " (not current)")
+    @currentSubscription = page
     @logResponse page
     @ready(page)
     @cache[page] = @_getPage(1).fetch()
@@ -146,6 +171,7 @@ Meteor.Pagination.prototype =
     #console.log "getPage #{page}"
     unless page?
       page = @currentPage()
+    page = parseInt(page)
     if Meteor.isClient
       @recvPages page
       if page of @cache
@@ -202,7 +228,10 @@ Meteor.Pagination.prototype =
       to make place for a new chunk and all data have to be reloaded.
       Otherwise, the same data shows up on every newly requested page.
       """
-      if @_ready and @Collection.find().count() > @perPage
+      if @_ready and (
+        @Collection.find().count() > @perPage or 
+        (@cache[p] is 0 and p <= @sess "totalPages")
+        )
         #console.log 'rl1'
         @Collection._collection.remove {}
         @reload()
@@ -253,7 +282,7 @@ Meteor.Pagination.prototype =
     n = []
     n.push
         p: "«"
-        n: "previous"
+        n: page - 1
         active: ""
         disabled: if page == 1 then "disabled" else ""
     for p in [from .. to]
@@ -264,7 +293,7 @@ Meteor.Pagination.prototype =
         disabled: if page > total then "disabled" else ""
     n.push
         p: "»"
-        n: "next"
+        n: page + 1
         active: ""
         disabled: if page >= total then "disabled" else ""
     n
@@ -272,12 +301,7 @@ Meteor.Pagination.prototype =
     cpage = @currentPage()
     total = @sess "totalPages"
     #console.log cpage, total, n, p
-    if n is "previous"
-      page = cpage - 1
-    else if n is "next"
-      page = cpage + 1
-    else
-      page = p
+    page = n
     if page <= total and page > 0
       @sess "currentPage", page
 
