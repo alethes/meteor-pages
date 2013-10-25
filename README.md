@@ -61,9 +61,8 @@ Settings can be passed as a second argument to `Meteor.Paginate()`. Almost all c
         count: 
             $gt: 10
 ```
-2. Client-side
+2. Client-side:
 ```
-//Provided the declaration assigned to @Pages, as above:
 Pages.set
     perPage: 10
     sort: title: -1
