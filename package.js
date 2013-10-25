@@ -26,6 +26,7 @@ Package.on_use(function(api){
     api.add_files([
         "templates.html",
         "client/main.coffee",
+        "client/pages.css",
         "loader.gif"
     ], "client");
     /*
