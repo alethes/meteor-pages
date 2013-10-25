@@ -1,0 +1,7 @@
+{
+  "packages": {
+    "pages": {
+      "git": "https://github.com/alethes/meteor-pages.git"    
+    }
+  }
+}

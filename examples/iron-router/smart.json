@@ -1,0 +1,13 @@
+{
+  "packages": {
+    "pages": {
+      "git": "https://github.com/alethes/meteor-pages.git"    
+    },
+    "iron-router": {
+      "git": "https://github.com/EventedMind/iron-router.git"    
+    },
+    "bootstrap-3": {
+      "git": "https://github.com/mangasocial/meteor-bootstrap-3.git"
+    }
+  }
+}
