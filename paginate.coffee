@@ -1,6 +1,4 @@
-_PaginateInstances = 0
-_Paginate = (collection, settings = {}) ->
-  _PaginateInstances += 1
+Meteor.Pagination = (collection, settings = {}) ->
   @name = "paginate" + (if _PaginateInstances is 1 then "" else _PaginateInstances)
   @Collection = new Meteor.Collection collection
   #@tGetPage = _.throttle @getPage.bind(@), 1000
@@ -18,7 +16,7 @@ _Paginate = (collection, settings = {}) ->
     @sess "ready", true
   return @
 
-_Paginate.prototype =
+Meteor.Pagination.prototype =
   methods:
     "countPages": ->
       Math.ceil @Collection.find(@filters, 
@@ -285,7 +283,5 @@ _Paginate.prototype =
         #console.log "Requesting #{p}" + (if p is page then " (current)" else " (not current)")
         @recvPage p
 
-@_Paginate = _Paginate
-@_PaginateInstances = _PaginateInstances
 Meteor.Paginate = (collection, settings) ->
   new _Paginate collection, settings

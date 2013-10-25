@@ -24,10 +24,11 @@ Package.on_use(function(api){
         "client/main.coffee",
         "loader.gif"
     ], "client");
-
+    /*
     api.export([
         "_Paginate",
         "_PaginateInstances"
     ], ["client", "server"]);
+    */
     api.add_files("paginate.coffee", ["client", "server"]);
 });
