@@ -1,5 +1,5 @@
 Meteor.Pagination = (collection, settings = {}) ->
-  @name = "paginate" + (if _PaginateInstances is 1 then "" else _PaginateInstances)
+  @name = "paginate"# + (if _PaginateInstances is 1 then "" else _PaginateInstances)
   @Collection = new Meteor.Collection collection
   #@tGetPage = _.throttle @getPage.bind(@), 1000
   for key, value of settings
@@ -17,6 +17,35 @@ Meteor.Pagination = (collection, settings = {}) ->
   return @
 
 Meteor.Pagination.prototype =
+  style: "bootstrap"
+  _currentPage: 1
+  dataMargin: 3
+  paginationMargin: 3
+  onReloadPage1: false
+  filters: {}
+  sort: {}
+  _ready: true
+  itemTemplate: "paginateItemDefault"
+  perPage: 10
+  pageSizeLimit: 30
+  prependRoute: "/"
+  cache: {}
+  waiters: {}
+  timeouts: {}
+  counters: {}
+  subscriptions: {}
+  queue: []
+  pagesRequested: []
+  pagesReceived: []
+  #maxChangeRate: 1000
+  availableSettings:
+    perPage: Number
+    dataMargin: Number
+    paginationMargin: Number
+    filters: Object
+    sort: Object
+    onReloadPage1: Boolean
+    itemTemplate: Object
   methods:
     "countPages": ->
       Math.ceil @Collection.find(@filters, 
@@ -32,21 +61,42 @@ Meteor.Pagination.prototype =
     for n, f of @methods
       @methods[n] = f.bind @
     Meteor.methods @methods
-  availableSettings:
-    perPage: Number
-    dataMargin: Number
-    paginationMargin: Number
-    filters: Object
-    sort: Object
-    onReloadPage1: Boolean
-    itemTemplate: Object
-  itemTemplate: "paginateItemDefault"
-  _set: (k, v) ->
-    if k of @availableSettings
-      check v, @availableSettings[k]
-      @[k] = v
+  currentPage: ->
+    if Meteor.isClient and @sess("currentPage")?
+      @sess "currentPage"
+    else 
+      @_currentPage
+  isReady: ->
+    @_ready
+  ready: (p) ->
+    @_ready = true
+    if p == true or p is @currentPage() and Session?
+      @sess "ready", true
+  loading: (p) ->
+    for k, v of @subscriptions
+      @subscriptions[k].stop()
+      delete @subscriptions[k]
+    @_ready = false
+    if p is @currentPage() and Session?
+      @sess "ready", false
+  logRequest: (p) ->
+    @loading p
+    unless p in @pagesRequested
+      @pagesRequested.push(p)
+  logResponse: (p) ->
+    unless p in @pagesReceived
+      @pagesReceived.push(p)
+  clearQueue: ->
+    @queue = []
+    #@pagesRequested = []
+    #@pagesReceived = []
+  sess: (k, v) ->
+    k = "#{@name}.#{k}"
+    #console.log k, v
+    if v?
+      Session.set k, v
     else
-      new Meteor.Error 400, "Setting not available."
+      Session.get k
   set: (k, v = undefined) ->
     if Meteor.isClient
       Meteor.call "set", k, v, @reload.bind(@)
@@ -59,20 +109,12 @@ Meteor.Pagination.prototype =
       for _k, _v of k
         @_set _k, _v
     true
-  style: "bootstrap"
-  dataMargin: 3
-  paginationMargin: 3
-  onReloadPage1: false
-  filters: {}
-  sort: {}
-  _ready: true
-  sess: (k, v) ->
-    k = "#{@name}.#{k}"
-    #console.log k, v
-    if v?
-      Session.set k, v
+  _set: (k, v) ->
+    if k of @availableSettings
+      check v, @availableSettings[k]
+      @[k] = v
     else
-      Session.get k
+      new Meteor.Error 400, "Setting not available."
   reload: ->
     @clearCache()
     Meteor.call "countPages", ((e, total) ->
@@ -82,49 +124,6 @@ Meteor.Pagination.prototype =
       @sess "currentPage", false
       @sess "currentPage", p
     ).bind @
-  isReady: ->
-    @_ready
-  _currentPage: 1
-  currentPage: ->
-    if Meteor.isClient and @sess("currentPage")?
-      @sess "currentPage"
-    else 
-      @_currentPage
-  loading: (p) ->
-    for k, v of @subscriptions
-      @subscriptions[k].stop()
-      delete @subscriptions[k]
-    @_ready = false
-    if p is @currentPage() and Session?
-      @sess "ready", false
-  ready: (p) ->
-    @_ready = true
-    if p == true or p is @currentPage() and Session?
-      @sess "ready", true
-  perPage: 10
-  pageSizeLimit: 30
-  prependRoute: "/"
-  cache: {}
-  waiters: {}
-  timeouts: {}
-  counters: {}
-  subscriptions: {}
-  queue: []
-  pagesRequested: []
-  pagesReceived: []
-  maxChangeRate: 1000
-  clearQueue: ->
-    @queue = []
-    #@pagesRequested = []
-    #@pagesReceived = []
-  lastPageChange: 0
-  logRequest: (p) ->
-    @loading p
-    unless p in @pagesRequested
-      @pagesRequested.push(p)
-  logResponse: (p) ->
-    unless p in @pagesReceived
-      @pagesReceived.push(p)
   clearCache: ->
     @cache = {}
     @pagesRequested = []
@@ -187,6 +186,13 @@ Meteor.Pagination.prototype =
         onError: (e) ->
           console.log e
     ).bind(@, page)
+  recvPages: (page) ->
+    #console.log "recvPages called for #{page}"
+    #console.log "Neighbors list: ", @neighbors page
+    for p in @neighbors page
+      unless p in @pagesRequested and p in @pagesReceived or p of @cache
+        #console.log "Requesting #{p}" + (if p is page then " (current)" else " (not current)")
+        @recvPage p
   watchman: ->
     setInterval (->
       p = @currentPage()
@@ -230,18 +236,6 @@ Meteor.Pagination.prototype =
       if dd > 0
         @n.push dd
     @n
-  onNavClick: (n, p) ->
-    cpage = @currentPage()
-    total = @sess "totalPages"
-    #console.log cpage, total, n, p
-    if n is "previous"
-      page = cpage - 1
-    else if n is "next"
-      page = cpage + 1
-    else
-      page = p
-    if page <= total and page > 0
-      @sess "currentPage", page
   paginationNeighbors: ->
     page = @currentPage()
     total = @sess "totalPages"
@@ -275,13 +269,18 @@ Meteor.Pagination.prototype =
         active: ""
         disabled: if page >= total then "disabled" else ""
     n
-  recvPages: (page) ->
-    #console.log "recvPages called for #{page}"
-    #console.log "Neighbors list: ", @neighbors page
-    for p in @neighbors page
-      unless p in @pagesRequested and p in @pagesReceived or p of @cache
-        #console.log "Requesting #{p}" + (if p is page then " (current)" else " (not current)")
-        @recvPage p
+  onNavClick: (n, p) ->
+    cpage = @currentPage()
+    total = @sess "totalPages"
+    #console.log cpage, total, n, p
+    if n is "previous"
+      page = cpage - 1
+    else if n is "next"
+      page = cpage + 1
+    else
+      page = p
+    if page <= total and page > 0
+      @sess "currentPage", page
 
 Meteor.Paginate = (collection, settings) ->
-  new _Paginate collection, settings
+  new Meteor.Pagination collection, settings
