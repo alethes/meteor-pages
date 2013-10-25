@@ -20,7 +20,7 @@ Meteor.Pagination.prototype =
   dataMargin: 3
   itemTemplate: "paginateItemDefault"
   onReloadPage1: false
-  pageSizeLimit: 30 #Not available to the client
+  pageSizeLimit: 60 #Unavailable to the client
   paginationMargin: 3
   perPage: 10
   route: "/page/"
@@ -35,7 +35,6 @@ Meteor.Pagination.prototype =
     onReloadPage1: Boolean
     paginationMargin: Number
     perPage: Number
-    prependRoute: String
     route: String
     router: true #Any type. Use only in comparisons. String or Boolean expected
     routerTemplate: String

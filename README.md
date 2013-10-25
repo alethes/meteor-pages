@@ -25,6 +25,8 @@ Meteorite:
 
 Basic usage
 -----------
+The following code should be executed in the common code (both on the server and the client).
+
 Coffeescript:
 
 `@Paginate = Meteor.Paginate "collection-name"`
@@ -48,18 +50,25 @@ and HTML:
 
 Settings
 --------
+Settings can be passed as a second argument to `Meteor.Paginate()`. Almost all can be changed from the client-side, causing immediate redrawing.
 
-+ dataMargin *Number*
-+ filters *Object*
-+ itemTemplate *String*
-+ onReloadPage1 *Boolean*
-+ paginationMargin *Number*
-+ perPage *Number*
-+ prependRoute *String*
-+ route *String*
-+ router *String or Boolean*
-+ routerTemplate *String*
-+ sort: *Object*
+Available to the client:
++ **dataMargin (*Number*, default: 3)** - determines how many neighboring pages on each side should be prefetched for seamless transition after loading the current page.
++ **filters (*Object*, default = {})** - MongoDB find query object, eg. `{name: {$lt: 5}}`
++ **itemTemplate (*String*, default = "paginateItemDefault")** - name of the template to use for items. The default template simply lists all attributes of an item
++ **onReloadPage1 (*Boolean*, default = false)** - determines whether to navigate to page 1 after reloading caused by a change in settings (eg. new sorting order)
++ **paginationMargin (*Number*, default = 3)** - the number of neighboring pages to display on each side of the navigation panel
++ **perPage (*Number*, default = 10)** - number of items to display per page (can't be larger than server-imposed **pageSizeLimit**)
++ **route (*String*, default = "/page/")** - route prefix used for subsequent pages (eg. "/page/" gives "/page/1", "/page/2" etc.)
++ **router (*String or Boolean*, default = false)** - Three options:
+   - *true* - a router is used but the routes are configured separately by the user
+   - *false* - no router used
+   - *"iron-router"* - *iron-router* is used and the routes are automatically set up by *pages*
++ **routerTemplate (*String*, default = "pages")** - a template used by *iron-router* to generate paging 
++ **sort (*Object*, defualt = {})** - MongoDB sort determining object, eg. {name: 1}
+
+Unavailable to the client:
++ pageSizeLimit (*Number, default = 60*) - limits the maximum number of items displayed per page
 
 
 Examples
