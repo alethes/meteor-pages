@@ -74,6 +74,8 @@ Available to the client:
 + **dataMargin (*Number*, default: 3)** - determines how many neighboring pages on each side should be prefetched for seamless transition after loading the current page.
 + **filters (*Object*, default = {})** - MongoDB find query object, eg. `{name: {$lt: 5}}`
 + **itemTemplate (*String*, default = "paginateItemDefault")** - name of the template to use for items. The default template simply lists all attributes of an item
++ **navShowFirst (*Boolean*, default = false)** - whether to show the link to the first page («) in the navigation panel
++ **navShowLast (*Boolean*, default = false)** - whether to show the link to the last page (») in the navigation panel
 + **onReloadPage1 (*Boolean*, default = false)** - determines whether to navigate to page 1 after reloading caused by a change in settings (eg. new sorting order)
 + **paginationMargin (*Number*, default = 3)** - the number of neighboring pages to display on each side of the navigation panel
 + **perPage (*Number*, default = 10)** - number of items to display per page (can't be larger than server-imposed **pageSizeLimit**)
@@ -86,7 +88,7 @@ Available to the client:
 + **sort (*Object*, defualt = {})** - MongoDB sort determining object, eg. {name: 1}
 
 Unavailable to the client:
-+ pageSizeLimit (*Number, default = 60*) - limits the maximum number of items displayed per page
++ **pageSizeLimit (*Number*, default = 60)** - limits the maximum number of items displayed per page
 
 
 Examples
@@ -97,6 +99,7 @@ Basic example:
 ```
 meteor add coffeescript
 mrt add pages
+mrt add bootstrap-3 (optional)
 ```
 Iron-router:
 ```
@@ -105,3 +108,11 @@ mrt add pages
 mrt add iron-router
 mrt add bootstrap-3 (optional)
 ```
+
+Todos
+-----
++ Infinite scrolling
++ Facilitate creating more than one Pagination instance per page
++ Option to preserve the old page until new one is loaded
++ Handling dynamically incoming data with timestamp field
++ Other pagination styles
