@@ -29,12 +29,12 @@ The following code should be executed in the common code (both on the server and
 
 Coffeescript:
 
-`@Paginate = Meteor.Paginate "collection-name"`
+`@Pages = Meteor.Paginate "collection-name"`
       
 or Javascript:
 
 `
-this.Paginate = Meteor.Paginate("collection-name");
+this.Pages = Meteor.Paginate("collection-name");
 `
 
 and HTML:
@@ -50,7 +50,24 @@ and HTML:
 
 Settings
 --------
-Settings can be passed as a second argument to `Meteor.Paginate()`. Almost all can be changed from the client-side, causing immediate redrawing.
+Settings can be passed as a second argument to `Meteor.Paginate()`. Almost all can be changed from the client-side, causing immediate redrawing. Settings can be changed in:
+1. Common code, on declaration (client and server)
+```
+@Pages = Meteor.Paginate "collection-name",
+    perPage: 20
+    sort: 
+        title: 1
+    filters: 
+        count: 
+            $gt: 10
+```
+2. Client-side
+```
+#Provided the declaration assigned to @Pages, as above
+Pages.set
+    perPage: 10
+    sort: title: -1
+```
 
 Available to the client:
 + **dataMargin (*Number*, default: 3)** - determines how many neighboring pages on each side should be prefetched for seamless transition after loading the current page.
