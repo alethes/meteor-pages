@@ -1,0 +1,36 @@
+{
+  "meteor": {},
+  "dependencies": {
+    "basePackages": {
+      "pages": {
+        "git": "https://github.com/alethes/meteor-pages.git",
+        "branch": "master"
+      },
+      "iron-router": {
+        "git": "https://github.com/EventedMind/iron-router.git",
+        "branch": "master"
+      },
+      "bootstrap-3": {
+        "git": "https://github.com/mangasocial/meteor-bootstrap-3.git",
+        "branch": "master"
+      }
+    },
+    "packages": {
+      "pages": {
+        "git": "https://github.com/alethes/meteor-pages.git",
+        "branch": "master",
+        "commit": "8dd42f016f34070f06c8ee36a601f1e09d57fb6e"
+      },
+      "iron-router": {
+        "git": "https://github.com/EventedMind/iron-router.git",
+        "branch": "master",
+        "commit": "b0663d38a1df51c867ef797716ca27cf3210a046"
+      },
+      "bootstrap-3": {
+        "git": "https://github.com/mangasocial/meteor-bootstrap-3.git",
+        "branch": "master",
+        "commit": "47996f67f3987c9f82117394effcbe1586a4fe29"
+      }
+    }
+  }
+}

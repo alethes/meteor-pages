@@ -8,5 +8,3 @@ insecure
 preserve-inputs
 pages
 coffeescript
-iron-router
-bootstrap-3
