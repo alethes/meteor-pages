@@ -43,7 +43,7 @@ and HTML:
 Examples
 --------
 
-Currently there're just two examples. One demonstrates the most basic usage and the other shows how to easily integrate pages with iron-router. If you experience any problems, make sure all the dependencies are installed (using Meteorite).
+Currently there're just two examples. One demonstrates the most basic usage and the other shows how to easily integrate *pages* with iron-router. If you experience any problems, make sure all the dependencies are installed (using Meteorite).
 Basic example:
 ```
 meteor add coffeescript
