@@ -68,15 +68,16 @@ Meteor.Pagination.prototype =
   setRouter: ->
     if @router is "iron-router"
       pr = "#{@route}:n"
+      t = @routerTemplate
       Router.map ->
         @route "home",
             path: "/"
-            template: @routerTemplate
+            template: t
             onBeforeRun: ->
                 Session.set "paginate.currentPage", 1
         @route "page",
             path: pr
-            template: @routerTemplate
+            template: t
             onBeforeRun: ->
                 Session.set "paginate.currentPage", parseInt(@params.n)
   countPages: ->  
