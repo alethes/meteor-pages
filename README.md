@@ -99,6 +99,7 @@ Basic example:
 ```
 meteor add coffeescript
 mrt add pages
+mrt add bootstrap-3 (optional)
 ```
 Iron-router:
 ```
