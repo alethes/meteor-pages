@@ -57,6 +57,7 @@ Settings can be passed as a second argument to `Meteor.Paginate()`. Almost all o
 There are two ways to modify settings:
 
 1. In common code, during declaration (client and server):
+
 ```
 @Pages = Meteor.Paginate "collection-name",
     perPage: 20
@@ -67,6 +68,7 @@ There are two ways to modify settings:
             $gt: 10
 ```
 2. Client-side code / common code (client and server), after declaration:
+
 ```
 Pages.set({
     perPage: 10,
