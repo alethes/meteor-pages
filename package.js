@@ -36,3 +36,37 @@ Package.on_use(function(api){
     ], ["client", "server"]);
     */
 });
+
+Package.on_test(function(api){
+    api.use([
+        "deps",
+        "templating",
+        "underscore",
+        "coffeescript",
+        "handlebars",
+        "spark",
+        "session"
+    ], "client");
+
+    api.use([
+        "deps",
+        "underscore",
+        "coffeescript"
+    ], "server");
+
+    api.use([
+        "tinytest",
+        "test-helpers"
+    ], ["client", "server"]);
+
+    api.add_files([
+        "tests.coffee"
+    ], ["client", "server"]);
+
+    api.add_files([
+        "templates.html",
+        "client/main.coffee",
+        "client/pages.css",
+        "loader.gif"
+    ], "client");
+});

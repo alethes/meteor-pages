@@ -25,7 +25,7 @@ Meteorite:
 
 Basic usage
 -----------
-The following code should be executed in the common code (both on the server and the client).
+The following should be executed in the common code (both on the server- and the client-side).
 
 Coffeescript:
 
@@ -48,10 +48,15 @@ and HTML:
 </body>
 ```
 
+Of course, you can use any variable to store the object returned by `Meteor.Paginate()`, not necessarily `Pages`.
+
 Settings
 --------
-Settings can be passed as a second argument to `Meteor.Paginate()`. Almost all can be changed from the client-side, causing immediate redrawing. Settings can be changed in:
-1. Common code, on declaration (client and server)
+Settings can be passed as a second argument to `Meteor.Paginate()`. Almost all of them can be changed on the client-side, causing immediate redrawing.
+
+There are two ways to modify settings:
+
+1. In common code, during declaration (client and server):
 ```
 @Pages = Meteor.Paginate "collection-name",
     perPage: 20
@@ -61,7 +66,7 @@ Settings can be passed as a second argument to `Meteor.Paginate()`. Almost all c
         count: 
             $gt: 10
 ```
-2. Client-side
+2. Client-side code / common code (client and server), after declaration:
 ```
 Pages.set({
     perPage: 10,
