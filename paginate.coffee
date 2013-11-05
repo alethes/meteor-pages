@@ -20,8 +20,8 @@ Meteor.Pagination = (collection, settings = {}) ->
   return @
 
 Meteor.Pagination.prototype =
-  filters: {}
   dataMargin: 3
+  filters: {}
   infinite: false
   itemTemplate: "_pagesItemDefault"
   navShowFirst: false
