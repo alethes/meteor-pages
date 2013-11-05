@@ -1,0 +1,21 @@
+
+<template name="_pagesPage">
+  {{#if ready}}
+  {{#each items}}
+  {{{item}}}
+  {{/each}}
+  {{else}}
+  <div style="text-align:center"><img src="/packages/pages/loader.gif"/></div>{{/if}}
+</template>
+<template name="_pagesNav">{{#if show}}
+  <div style="text-align:center" data-pages="{{name}}" class="pagination-cont">
+    <ul class="pagination">{{#each paginationNeighbors}}
+      <li class="{{active}} {{disabled}}"><a href="{{link}}">{{p}}</a></li>{{/each}}
+    </ul>
+  </div>{{/if}}
+</template>
+<template name="_pagesItemDefault">
+  <div style="margin:5px 40px; padding: 10px; border: 1px solid #999; border-radius: 15px;">{{#each properties}}
+    <div><i>{{name}}</i>: {{value}}</div>{{/each}}
+  </div>
+</template>

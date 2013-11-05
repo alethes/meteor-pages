@@ -1,0 +1,34 @@
+<head>
+  <title>Meteor Paginate Demo</title>
+  <link rel="stylesheet" href=""
+</head>
+
+<body>
+    <div class="navbar navbar-default">
+        <div id="slider" style="width:400px; margin:20px;"></div>
+    </div>
+    {{yield}}
+    <div style="width:48%; display:inline-block; vertical-align:top; float:right;">
+    {{> items2}}
+    </div>
+</body>
+
+<template name="pages">
+    <div style="width:48%; display:inline-block; vertical-align:top;">
+    {{> items}}
+    </div>
+</template>
+
+<template name="items">
+    {{{pagesNav}}}
+    <div style="min-height:500px">
+    {{{pages}}}
+    </div>
+</template>
+
+<template name="items2">
+    {{{pagesNav}}}
+    <div style="min-height:500px">
+    {{{pages}}}
+    </div>
+</template>

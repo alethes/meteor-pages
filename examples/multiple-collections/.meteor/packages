@@ -6,7 +6,9 @@
 standard-app-packages
 insecure
 preserve-inputs
-pages
 coffeescript
-iron-router
 bootstrap-3
+iron-router
+pages
+jquery-ui
+jquery
