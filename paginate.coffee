@@ -287,16 +287,16 @@ Meteor.Pagination.prototype =
       (not @infinite and @Collection.find().count() > @perPage) or 
       (not @cache[p]? or (@cache[p].length is 0 and p <= @sess "totalPages"))
       )
-      #console.log @name, 'rl1'
+      console.log @name, 'rl1'
       try
         for i in @Collection._collection.find().fetch()
           @Collection._collection.remove i
       catch e
       @reload()
-    """
-    Make sure the current page is loaded. If so, 
-    make sure the status is set to ready.
-    """
+      """
+      Make sure the current page is loaded. If so, 
+      make sure the status is set to ready.
+      """
     else if p in @pagesReceived
       @ready(true)
     else if @_ready
