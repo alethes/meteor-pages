@@ -99,6 +99,7 @@ Available to the client:
    - *"iron-router"* - *iron-router* is used and the routes are automatically set up by *pages*
 + **routerTemplate (*String*, default = "pages")** - a template used by *iron-router* to generate paging 
 + **sort (*Object*, defualt = {})** - MongoDB sort determining object, eg. {name: 1}
++ **templateName (*String*, defualt = "")** - A name of the template to use. Defaults to the collection's name.
 
 Unavailable to the client:
 + **pageSizeLimit (*Number*, default = 60)** - limits the maximum number of items displayed per page

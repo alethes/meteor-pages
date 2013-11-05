@@ -35,6 +35,7 @@ Meteor.Pagination.prototype =
   router: false
   routerTemplate: "pages"
   sort: {}
+  templateName: "" #Defaults to collection name
   #maxChangeRate: 1000
   availableSettings:
     dataMargin: Number
@@ -113,10 +114,11 @@ Meteor.Pagination.prototype =
             onBeforeRun: ->
                 self.sess "currentPage", parseInt(@params.n)
   setTemplates: ->
-    Template[@name].pagesNav = (->
+    name = if @templateName is "" then @name else @templateName
+    Template[name].pagesNav = (->
       Template['_pagesNav'] @
     ).bind @
-    Template[@name].pages = (->
+    Template[name].pages = (->
       Template['_pagesPage'] @
     ).bind @
   defaults: (k, v) ->
