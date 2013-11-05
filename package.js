@@ -24,7 +24,7 @@ Package.on_use(function(api){
     ], ["client", "server"]);
 
     api.add_files([
-        "templates.html",
+        "client/templates.html",
         "client/main.coffee",
         "client/pages.css",
         "loader.gif"
@@ -64,7 +64,7 @@ Package.on_test(function(api){
     ], ["client", "server"]);
 
     api.add_files([
-        "templates.html",
+        "client/templates.html",
         "client/main.coffee",
         "client/pages.css",
         "loader.gif"

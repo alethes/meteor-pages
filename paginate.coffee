@@ -1,7 +1,8 @@
+Meteor.Paginations = {}
 Meteor.Pagination = (collection, settings = {}) ->
-  @name = "paginate"# + (if _PaginateInstances is 1 then "" else _PaginateInstances)
-  @Collection = new Meteor.Collection collection
-  #@tGetPage = _.throttle @getPage.bind(@), 1000
+  @setCollection collection
+  @setId collection
+  Meteor.Pagination.prototype.paginations[@name] = @
   for key, value of settings
     @set key, value
   @setRouter()
@@ -9,23 +10,27 @@ Meteor.Pagination = (collection, settings = {}) ->
     @setMethods()
     Meteor.publish @name, @_getPage.bind @
   else
+    @setTemplates()
     @countPages()
-    @watchman()
+    if Meteor.Pagination.prototype._firstCall
+      @watchman()
     @sess "currentPage", 1
     @sess "ready", true
+  Meteor.Pagination.prototype._firstCall = false
   return @
 
 Meteor.Pagination.prototype =
   filters: {}
   dataMargin: 3
   infinite: false
-  itemTemplate: "paginateItemDefault"
+  itemTemplate: "_pagesItemDefault"
   navShowFirst: false
   navShowLast: false
   onReloadPage1: false
   pageSizeLimit: 60 #Unavailable to the client
   paginationMargin: 3
   perPage: 10
+  requestTimeout: 3
   route: "/page/"
   router: false
   routerTemplate: "pages"
@@ -34,58 +39,93 @@ Meteor.Pagination.prototype =
   availableSettings:
     dataMargin: Number
     filters: Object
+    infinite: Boolean
     itemTemplate: String
     navShowFirst: Boolean
     navShowLast: Boolean
     onReloadPage1: Boolean
     paginationMargin: Number
     perPage: Number
+    requestTimeout: Number
     route: String
     router: true #Any type. Use only in comparisons. String or Boolean expected
     routerTemplate: String
     sort: Object
+  _firstCall: true
   _ready: true
   _currentPage: 1
   cache: {}
+  collections: {}
   waiters: {}
   timeouts: {}
   subscriptions: {}
   queue: []
   pagesRequested: []
   pagesReceived: []
+  paginations: {}
   currentSubscription: null
   methods:
-    "countPages": ->
+    "CountPages": ->
       Math.ceil @Collection.find(@filters, 
         sort: @sort
       ).count() / @perPage
-    "set": (k, v = undefined) ->
+    "Set": (k, v = undefined) ->
       if v?
         @set k, v
       else
         for _k, _v of k
           @set _k, _v
+  setId: (name) ->
+    if name of Meteor.Pagination.prototype.paginations
+      n = name.match /[0-9]+$/
+      if n? 
+        name = name[0 .. n[0].length] + (parseInt(n) + 1)
+      else
+        name = name + "2"
+    @id = "pages." + name
+    @name = name
+  setCollection: (collection) ->
+    try
+      @Collection = new Meteor.Collection collection
+      Meteor.Pagination.prototype.collections[@name] = @Collection
+    catch e
+      @Collection = Meteor.Pagination.prototype.collections[@name]
   setMethods: ->
+    nm = {}
     for n, f of @methods
-      @methods[n] = f.bind @
+      nm[@id + n] = f.bind @
+    @methods = nm
     Meteor.methods @methods
   setRouter: ->
     if @router is "iron-router"
       pr = "#{@route}:n"
       t = @routerTemplate
+      self = @
       Router.map ->
         @route "home",
             path: "/"
             template: t
             onBeforeRun: ->
-                Session.set "paginate.currentPage", 1
+                self.sess "currentPage", 1
         @route "page",
             path: pr
             template: t
             onBeforeRun: ->
-                Session.set "paginate.currentPage", parseInt(@params.n)
+                self.sess "currentPage", parseInt(@params.n)
+  setTemplates: ->
+    Template[@name].pagesNav = (->
+      Template['_pagesNav'] @
+    ).bind @
+    Template[@name].pages = (->
+      Template['_pagesPage'] @
+    ).bind @
+  defaults: (k, v) ->
+    if v?
+      Meteor.Pagination.prototype[k] = v
+    else
+      Meteor.Pagination.prototype[k]
   countPages: ->  
-    Meteor.call "countPages", ((e, r) ->
+    Meteor.call "#{@id}CountPages", ((e, r) ->
       @sess "totalPages", r
     ).bind(@)
   currentPage: ->
@@ -108,6 +148,7 @@ Meteor.Pagination.prototype =
       if p is @currentPage() and Session?
         @sess "ready", false
   logRequest: (p) ->
+    @timeLastRequest = @now()
     @loading p
     unless p in @pagesRequested
       @pagesRequested.push(p)
@@ -119,7 +160,7 @@ Meteor.Pagination.prototype =
     #@pagesRequested = []
     #@pagesReceived = []
   sess: (k, v) ->
-    k = "#{@name}.#{k}"
+    k = "#{@id}.#{k}"
     #console.log k, v
     if v?
       Session.set k, v
@@ -127,7 +168,7 @@ Meteor.Pagination.prototype =
       Session.get k
   set: (k, v = undefined) ->
     if Meteor.isClient
-      Meteor.call "set", k, v, @reload.bind(@)
+      Meteor.call "#{@id}Set", k, v, @reload.bind(@)
     """
     Overloading must be implemented both here and in set() method for full support for hash of options and single callback
     """
@@ -144,9 +185,11 @@ Meteor.Pagination.prototype =
       @[k] = v
     else
       new Meteor.Error 400, "Setting not available."
+  now: ->
+    (new Date()).getTime()
   reload: ->
     @clearCache()
-    Meteor.call "countPages", ((e, total) ->
+    Meteor.call "#{@id}CountPages", ((e, total) ->
       @sess "totalPages", total
       p = @currentPage()
       p = 1 if @onReloadPage1 or p > total
@@ -158,7 +201,7 @@ Meteor.Pagination.prototype =
     @pagesRequested = []
     @pagesReceived = []
   onData: (page) ->
-    #console.log page, 'READY', (if isCurrent then " (current)" else " (not current)")
+    #console.log page, 'READY'
     @currentSubscription = page
     @logResponse page
     @ready(page)
@@ -225,43 +268,55 @@ Meteor.Pagination.prototype =
         #console.log "Requesting #{p}" + (if p is page then " (current)" else " (not current)")
         @recvPage p
   watchman: ->
-    setInterval (->
-      p = @currentPage()
+    setInterval ->
+      for k, v of Meteor.Pagination.prototype.paginations
+        Meteor.Pagination.prototype.watch.call v
+    , 1000
+  watch: ->
+    p = @currentPage()
+    """
+    Sometimes (when page changes are too frequent), stopping
+    a subscription before getting data for a new page fails.
+    In such cases, the local collection has to be cleaned up again 
+    to make place for a new chunk and all data have to be reloaded.
+    Otherwise, the same data shows up on every newly requested page.
+    """
+    if @_ready and (
+      (not @infinite and @Collection.find().count() > @perPage) or 
+      (not @cache[p]? or (@cache[p].length is 0 and p <= @sess "totalPages"))
+      )
+      console.log @name, 'rl1'
+      try
+        for i in @Collection._collection.find().fetch()
+          @Collection._collection.remove i
+      catch e
+      @reload()
+    """
+    Make sure the current page is loaded. If so, 
+    make sure the status is set to ready.
+    """
+    if p in @pagesReceived
+      @ready(true)
+    else if @_ready
       """
-      Sometimes (when page changes are too frequent), stopping
-      a subscription before getting data for a new page fails.
-      In such cases, the local collection has to be cleaned up manually 
-      to make place for a new chunk and all data have to be reloaded.
-      Otherwise, the same data shows up on every newly requested page.
+      Stop any background requests that may be running and get
+      the current page immediately.
       """
-      if @_ready and (
-        (not @infinite and @Collection.find().count() > @perPage) or 
-        (@cache[p] is 0 and p <= @sess "totalPages")
-        )
-        #console.log 'rl1'
-        @Collection._collection.remove {}
-        @reload()
-      """
-      Make sure the current page is loaded. If so, 
-      make sure the status is set to ready.
-      """
-      if p in @pagesRequested and p in @pagesReceived
-        @ready(true)
-      else if @_ready
-        """
-        Stop any background requests that may be running and get
-        the current page immediately.
-        """
-        #console.log 'rl2'
+      console.log @name, 'rl2', p
+      try
         @clearQueue()
         @recvPages p
-      """
-      If all previous requests are complete, proceed to the next one in the queue.
-      """
-      if @queue.length and @_ready
-        """Current page is never in the queue, so isCurrent = false"""
-        @recvPage @queue.shift(), false
-    ).bind(@), 500
+      catch e
+    else if (@now() - @timeLastRequest) / 1000 > @requestTimeout
+      console.log @name, 'rl2', p
+      @reload()
+      @recvPages p
+    """
+    If all previous requests are complete, proceed to the next one in the queue.
+    """
+    if @queue.length and @_ready
+      """Current page is never in the queue, so isCurrent = false"""
+      @recvPage @queue.shift(), false
   neighbors: (page) ->
     @n = [page]
     for d in [1 .. @dataMargin]
@@ -314,6 +369,8 @@ Meteor.Pagination.prototype =
           n: total
           active: ""
           disabled: if page >= total then "disabled" else ""
+    for i, k in n
+      n[k]['_p'] = @
     n
   onNavClick: (n, p) ->
     cpage = @currentPage()
@@ -322,6 +379,9 @@ Meteor.Pagination.prototype =
     page = n
     if page <= total and page > 0
       @sess "currentPage", page
+  setInfiniteTrigger: ->
+    window.scroll = ->
+      (window.innerHeight + window.scrollY) >= document.body.offsetHeight - 100
 
 Meteor.Paginate = (collection, settings) ->
   new Meteor.Pagination collection, settings

@@ -1,35 +1,45 @@
-_.extend Template.paginate,
+_.extend Template['_pagesPage'],
     ready: ->
-        Session.get "paginate.ready"
+        @sess "ready"
     items: ->
-        Pages.getPage Session.get "paginate.currentPage"
+        p = @getPage @sess "currentPage"
+        unless p?
+            return
+        for i, k in p
+            p[k]['_t'] = @itemTemplate
+        p
     item: ->
-        Template[Pages.itemTemplate] @
+        Template[@_t] @
 
-_.extend Template.paginateNav,
+_.extend Template['_pagesNav'],
     show: ->
-        1 < Session.get "paginate.totalPages"
+        1 < @sess "totalPages"
     link: ->
-        if Pages.router
+        self = @_p
+        if self.router
             p = @n
             p = 1 if p < 1
-            total = Session.get "paginate.totalPages"
+            total = self.sess "totalPages"
             p = total if p > total
-            return Pages.route + p
+            return self.route + p
         "#"
     paginationNeighbors: ->
-        Session.get "paginate.currentPage"
-        Pages.paginationNeighbors()
+        @sess "currentPage"
+        @paginationNeighbors()
     events:
-        "click a": _.throttle ( ->
-            Pages.onNavClick.call Pages, @n, @p
+        "click a": _.throttle ( (e) ->
+            n = e.target.parentNode.parentNode.parentNode.getAttribute 'data-pages'
+            self = Meteor.Pagination.prototype.paginations[n]
+            unless self.router
+                e.preventDefault()
+            self.onNavClick.call self, @n, @p
         ), 1000
 
-_.extend Template.paginateItemDefault,
+_.extend Template['_pagesItemDefault'],
     properties: ->
         A = []
         for k, v of @
-            unless k is "_id"
+            unless k in ["_id", "_t"]
                 A.push
                     name: k
                     value: v
