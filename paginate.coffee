@@ -30,7 +30,7 @@ Meteor.Pagination.prototype =
   pageSizeLimit: 60 #Unavailable to the client
   paginationMargin: 3
   perPage: 10
-  requestTimeout: 3
+  requestTimeout: 4
   route: "/page/"
   router: false
   routerTemplate: "pages"
