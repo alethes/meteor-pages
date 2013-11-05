@@ -3,7 +3,11 @@ Meteor Pages
 
 State of the art, out of the box Meteor pagination.
 ---------------------------------------------------
-Live demo: [http://pages.meteor.com/](http://pages.meteor.com/)
+Live demos: 
+
+Basic - [http://pages.meteor.com/](http://pages.meteor.com/)
+
+Multiple collections - [http://pages2.meteor.com/](http://pages2.meteor.com/)
 
 Features
 --------
