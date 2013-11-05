@@ -1,4 +1,3 @@
-Meteor.Paginations = {}
 Meteor.Pagination = (collection, settings = {}) ->
   @setCollection collection
   @setId collection
@@ -30,7 +29,7 @@ Meteor.Pagination.prototype =
   pageSizeLimit: 60 #Unavailable to the client
   paginationMargin: 3
   perPage: 10
-  requestTimeout: 4
+  requestTimeout: 2
   route: "/page/"
   router: false
   routerTemplate: "pages"
@@ -106,12 +105,12 @@ Meteor.Pagination.prototype =
         @route "home",
             path: "/"
             template: t
-            onBeforeRun: ->
+            before: ->
                 self.sess "currentPage", 1
         @route "page",
             path: pr
             template: t
-            onBeforeRun: ->
+            before: ->
                 self.sess "currentPage", parseInt(@params.n)
   setTemplates: ->
     name = if @templateName is "" then @name else @templateName
@@ -144,8 +143,10 @@ Meteor.Pagination.prototype =
   loading: (p) ->
     unless @infinite
       for k, v of @subscriptions
-        @subscriptions[k].stop()
-        delete @subscriptions[k]
+        try
+          @subscriptions[k].stop()
+          delete @subscriptions[k]
+        catch e
       @_ready = false
       if p is @currentPage() and Session?
         @sess "ready", false
@@ -203,11 +204,16 @@ Meteor.Pagination.prototype =
     @pagesRequested = []
     @pagesReceived = []
   onData: (page) ->
-    #console.log page, 'READY'
+    #console.log @name, page, 'READY'
     @currentSubscription = page
     @logResponse page
     @ready(page)
     @cache[page] = @_getPage(1).fetch()
+    @checkQueue()
+  checkQueue: ->
+    if @queue.length
+      i = @queue.shift() until i in @neighbors(@currentPage()) or not @queue.length
+      @recvPage i, false
   _getPage: (page) ->
     #console.log(page, ((page - 1) * @perPage), @perPage, @sort) if Meteor.isServer
     #console.log "Fetching last result"
@@ -247,10 +253,10 @@ Meteor.Pagination.prototype =
     Run again if something goes wrong and the page is still needed
     """
     @timeouts[page] = setTimeout ((page) ->
-      if (not page in @pagesReceived or not page in @pagesRequested) and page in @neighbors @currentPage()
-        #console.log "Again #{page}"
+      if (page not in @pagesReceived or page not in @pagesRequested) and page in @neighbors @currentPage()
+        console.log "Again #{page}"
         @recvPage page
-    ).bind(@, page), 2000
+    ).bind(@, page), @requestTimeout * 1000
     """
     Subscription may block unless deferred.
     """
@@ -260,13 +266,13 @@ Meteor.Pagination.prototype =
           @.onData page
         ).bind(@, page)
         onError: (e) ->
-          console.log e
+          console.log 'Error', e
     ).bind(@, page)
   recvPages: (page) ->
     #console.log "recvPages called for #{page}"
     #console.log "Neighbors list: ", @neighbors page
     for p in @neighbors page
-      unless p in @pagesRequested and p in @pagesReceived or p of @cache
+      unless p in @pagesReceived or p of @cache
         #console.log "Requesting #{p}" + (if p is page then " (current)" else " (not current)")
         @recvPage p
   watchman: ->
@@ -275,50 +281,7 @@ Meteor.Pagination.prototype =
         Meteor.Pagination.prototype.watch.call v
     , 1000
   watch: ->
-    p = @currentPage()
-    """
-    Sometimes (when page changes are too frequent), stopping
-    a subscription before getting data for a new page fails.
-    In such cases, the local collection has to be cleaned up again 
-    to make place for a new chunk and all data have to be reloaded.
-    Otherwise, the same data shows up on every newly requested page.
-    """
-    if @_ready and (
-      (not @infinite and @Collection.find().count() > @perPage) or 
-      (not @cache[p]? or (@cache[p].length is 0 and p <= @sess "totalPages"))
-      )
-      console.log @name, 'rl1'
-      try
-        for i in @Collection._collection.find().fetch()
-          @Collection._collection.remove i
-      catch e
-      @reload()
-      """
-      Make sure the current page is loaded. If so, 
-      make sure the status is set to ready.
-      """
-    else if p in @pagesReceived
-      @ready(true)
-    else if @_ready
-      """
-      Stop any background requests that may be running and get
-      the current page immediately.
-      """
-      #console.log @name, 'rl2', p
-      try
-        @clearQueue()
-        @recvPages p
-      catch e
-    else if (@now() - @timeLastRequest) / 1000 > @requestTimeout
-      #console.log @name, 'rl3', p
-      @reload()
-      @recvPages p
-    """
-    If all previous requests are complete, proceed to the next one in the queue.
-    """
-    if @queue.length and @_ready
-      """Current page is never in the queue, so isCurrent = false"""
-      @recvPage @queue.shift(), false
+    @checkQueue @currentPage()
   neighbors: (page) ->
     @n = [page]
     for d in [1 .. @dataMargin]
