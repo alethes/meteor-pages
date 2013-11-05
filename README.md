@@ -127,3 +127,4 @@ Todos
 + Option to preserve the old page until new one is loaded
 + Handling dynamically incoming data with timestamp field
 + Other pagination styles
++ TESTS!
