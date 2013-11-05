@@ -287,7 +287,7 @@ Meteor.Pagination.prototype =
       (not @infinite and @Collection.find().count() > @perPage) or 
       (not @cache[p]? or (@cache[p].length is 0 and p <= @sess "totalPages"))
       )
-      console.log @name, 'rl1'
+      #console.log @name, 'rl1'
       try
         for i in @Collection._collection.find().fetch()
           @Collection._collection.remove i
@@ -297,20 +297,20 @@ Meteor.Pagination.prototype =
     Make sure the current page is loaded. If so, 
     make sure the status is set to ready.
     """
-    if p in @pagesReceived
+    else if p in @pagesReceived
       @ready(true)
     else if @_ready
       """
       Stop any background requests that may be running and get
       the current page immediately.
       """
-      console.log @name, 'rl2', p
+      #console.log @name, 'rl2', p
       try
         @clearQueue()
         @recvPages p
       catch e
     else if (@now() - @timeLastRequest) / 1000 > @requestTimeout
-      console.log @name, 'rl2', p
+      #console.log @name, 'rl3', p
       @reload()
       @recvPages p
     """
