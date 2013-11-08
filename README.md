@@ -30,16 +30,10 @@ Meteorite:
 
 Basic usage
 -----------
-The following should be executed in the common code (both on the server- and the client-side).
-
-Coffeescript:
-
-`@Pages = Meteor.Paginate "collection-name"`
-      
-or Javascript:
+The following should be executed in the common code (server- and client-side).
 
 `
-this.Pages = Meteor.Paginate("collection-name");
+Pages = Meteor.Paginate("collection-name")
 `
 
 and HTML:
