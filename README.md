@@ -72,11 +72,10 @@ There are two ways to modify settings:
 2. Client-side code / common code (client and server), after declaration:
 
 ```
-Pages.set({
-    perPage: 10,
-    sort: 
-        {title: -1}
-})
+Pages.set
+  perPage: 10
+  sort:
+    title: -1
 ```
 
 Available to the client:
