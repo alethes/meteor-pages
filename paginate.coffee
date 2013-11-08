@@ -1,24 +1,23 @@
-Meteor.Pagination = (collection, settings = {}) ->
-  @setCollection collection
-  @setId collection
-  Meteor.Pagination.prototype.paginations[@name] = @
-  for key, value of settings
-    @set key, value
-  @setRouter()
-  if Meteor.isServer
-    @setMethods()
-    Meteor.publish @name, @_getPage.bind @
-  else
-    @setTemplates()
-    @countPages()
-    if Meteor.Pagination.prototype._firstCall
-      @watchman()
-    @sess "currentPage", 1
-    @sess "ready", true
-  Meteor.Pagination.prototype._firstCall = false
-  return @
-
-Meteor.Pagination.prototype =
+@__Pages = class Pages
+  constructor: (collection, settings = {}) ->
+    @setCollection collection
+    @setId collection
+    Pages.prototype.paginations[@name] = @
+    for key, value of settings
+      @set key, value
+    @setRouter()
+    if Meteor.isServer
+      @setMethods()
+      Meteor.publish @name, @_getPage.bind @
+    else
+      @setTemplates()
+      @countPages()
+      if Pages.prototype._firstCall
+        @watchman()
+      @sess "currentPage", 1
+      @sess "ready", true
+    Pages.prototype._firstCall = false
+    return @
   dataMargin: 3
   filters: {}
   infinite: false
@@ -76,7 +75,7 @@ Meteor.Pagination.prototype =
         for _k, _v of k
           @set _k, _v
   setId: (name) ->
-    if name of Meteor.Pagination.prototype.paginations
+    if name of Pages.prototype.paginations
       n = name.match /[0-9]+$/
       if n? 
         name = name[0 .. n[0].length] + (parseInt(n) + 1)
@@ -87,9 +86,9 @@ Meteor.Pagination.prototype =
   setCollection: (collection) ->
     try
       @Collection = new Meteor.Collection collection
-      Meteor.Pagination.prototype.collections[@name] = @Collection
+      Pages.prototype.collections[@name] = @Collection
     catch e
-      @Collection = Meteor.Pagination.prototype.collections[@name]
+      @Collection = Pages.prototype.collections[@name]
   setMethods: ->
     nm = {}
     for n, f of @methods
@@ -122,9 +121,9 @@ Meteor.Pagination.prototype =
     ).bind @
   defaults: (k, v) ->
     if v?
-      Meteor.Pagination.prototype[k] = v
+      Pages.prototype[k] = v
     else
-      Meteor.Pagination.prototype[k]
+      Pages.prototype[k]
   countPages: ->  
     Meteor.call "#{@id}CountPages", ((e, r) ->
       @sess "totalPages", r
@@ -280,8 +279,8 @@ Meteor.Pagination.prototype =
         @recvPage p
   watchman: ->
     setInterval ->
-      for k, v of Meteor.Pagination.prototype.paginations
-        Meteor.Pagination.prototype.watch.call v
+      for k, v of Pages.prototype.paginations
+        Pages.prototype.watch.call v
     , 1000
   watch: ->
     @checkQueue @currentPage()
@@ -352,4 +351,4 @@ Meteor.Pagination.prototype =
       (window.innerHeight + window.scrollY) >= document.body.offsetHeight - 100
 
 Meteor.Paginate = (collection, settings) ->
-  new Meteor.Pagination collection, settings
+  new Pages collection, settings

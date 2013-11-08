@@ -29,7 +29,7 @@ _.extend Template['_pagesNav'],
     events:
         "click a": _.throttle ( (e) ->
             n = e.target.parentNode.parentNode.parentNode.getAttribute 'data-pages'
-            self = Meteor.Pagination.prototype.paginations[n]
+            self = __Pages.prototype.paginations[n]
             unless self.router
                 e.preventDefault()
             self.onNavClick.call self, @n, @p

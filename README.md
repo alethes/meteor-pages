@@ -17,7 +17,7 @@ Features
 + **Neighbor prefetching**. After loading the current page, it prefetches the neighbors to ensure seamless transitions.
 + **Request throttling**. Allows you to limit how often the page can be changed.
 + **Easy integration**. The package works out of the box. Page changes are triggered by a single session variable.
-+ **Multiple collections per page**. Each Pagination instance runs independently.
++ **Multiple collections per page**. Each Pagination instance runs independently. You can even create multiple paginations for one collection on a single page.
 + **Bootstrap 2/3-compatible navigation template**. The package itself borrows some CSS from Bootstrap 3 to ensure good looks without dependency, but can be re-styled easily.
 + **Failure resistance**. Accounts for multiple scenarios of failure.
 + **Built-in iron-router integration**. Binds easily to any other router.
