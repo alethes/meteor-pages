@@ -30,7 +30,7 @@ Meteorite:
 
 Basic usage
 -----------
-The following should be executed in the common code (server- and client-side).
+Javascript/Coffeescript (server- and client-side):
 
 `
 Pages = Meteor.Paginate("collection-name")
