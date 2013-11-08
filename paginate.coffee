@@ -140,13 +140,16 @@ Meteor.Pagination.prototype =
     @_ready = true
     if p == true or p is @currentPage() and Session?
       @sess "ready", true
+  stopSubscriptions: ->
+    for k, v of @subscriptions
+      try
+        @Collection._collection.remove()
+      catch e
+      @subscriptions[k].stop()
+      delete @subscriptions[k]
   loading: (p) ->
     unless @infinite
-      for k, v of @subscriptions
-        try
-          @subscriptions[k].stop()
-          delete @subscriptions[k]
-        catch e
+      @stopSubscriptions()
       @_ready = false
       if p is @currentPage() and Session?
         @sess "ready", false
@@ -254,7 +257,7 @@ Meteor.Pagination.prototype =
     """
     @timeouts[page] = setTimeout ((page) ->
       if (page not in @pagesReceived or page not in @pagesRequested) and page in @neighbors @currentPage()
-        console.log "Again #{page}"
+        #console.log "Again #{page}"
         @recvPage page
     ).bind(@, page), @requestTimeout * 1000
     """
