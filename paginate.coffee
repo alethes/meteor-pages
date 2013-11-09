@@ -1,7 +1,7 @@
 @__Pages = class Pages
   constructor: (collection, settings = {}) ->
     @setCollection collection
-    @setId collection
+    @setId @Collection._name
     Pages.prototype.paginations[@name] = @
     for key, value of settings
       @set key, value
@@ -84,11 +84,15 @@
     @id = "pages." + name
     @name = name
   setCollection: (collection) ->
-    try
-      @Collection = new Meteor.Collection collection
-      Pages.prototype.collections[@name] = @Collection
-    catch e
-      @Collection = Pages.prototype.collections[@name]
+    if (typeof(collection) == 'object')
+      Pages.prototype.collections[collection._name] = collection
+      @Collection = collection
+    else
+      try
+        @Collection = new Meteor.Collection collection
+        Pages.prototype.collections[@name] = @Collection
+      catch e
+        @Collection = Pages.prototype.collections[@name]
   setMethods: ->
     nm = {}
     for n, f of @methods
