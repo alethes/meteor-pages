@@ -146,16 +146,7 @@
   stopSubscriptions: ->
     for k, v of @subscriptions
       @subscriptions[k].stop()
-      setTimeout ((k) ->
-        delete @subscriptions[k]
-      ).bind(@, k), 2000
-      '''
-      for i in @Collection.find().fetch()
-        try
-          @Collection._collection.remove
-            _id: i._id
-        catch e
-      '''
+      delete @subscriptions[k]
   loading: (p) ->
     @_ready = false
     if p is @currentPage() and Session?
@@ -240,7 +231,7 @@
       skip: skip
       limit: @perPage
   getPage: (page) ->
-    console.log "getPage #{page}"
+    #console.log "getPage #{page}"
     unless page?
       page = @currentPage()
     page = parseInt(page)
@@ -295,15 +286,24 @@
   watch: ->
     setInterval ->
       for k, v of Pages.prototype.paginations
+        if v.Collection.find().count() > @perPage
+          for i in @Collection.find().fetch()
+            try
+              @Collection._collection.remove
+                _id: i._id
+            catch e
+          return v.reload()
         p = v.currentPage()
-        console.log "#{@name} watch"
+        #console.log "#{@name} watch"
         unless v.isReady()
-          console.log "#{@name} not ready"
+          #console.log "#{@name} not ready"
           if p in v.received
             v.ready p
           else unless p in v.requested
-            console.log "#{@name} page not requested"
+            #console.log "#{@name} page not requested"
             v.recvPages p
+          if v.cache[p]? and v.cache[p].length is 0
+            v.reload()
         v.checkQueue v.currentPage()
     , 1000
   neighbors: (page) ->
