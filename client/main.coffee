@@ -31,12 +31,11 @@ _.extend Template['_pagesNav'],
         "click a": (e) ->
             n = e.target.parentNode.parentNode.parentNode.getAttribute 'data-pages'
             self = __Pages.prototype.paginations[n]
-            _.throttle (->
-                console.log 'throttle'
+            (_.throttle (e, self, n) ->
                 unless self.router
                     e.preventDefault()
-                    self.onNavClick.call self, @n, @p
-            ), self.rateLimit * 1000
+                    self.onNavClick.call self, n
+            , self.rateLimit * 1000)(e, self, @n)
 
 _.extend Template['_pagesItemDefault'],
     properties: ->

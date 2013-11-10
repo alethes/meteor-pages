@@ -184,15 +184,11 @@
     #console.log "Set #{k} to #{v}"
     if Meteor.isClient and reload
       Meteor.call "#{@id}Set", k, v, @reload.bind(@)
-    """
-    Overloading must be implemented both here and in set() method for full support for hash of options and single callback
-    """
     if v?
       @_set k, v
     else
       for _k, _v of k
         @_set _k, _v
-    true
   _set: (k, v) ->
     if k of @availableSettings
       if @availableSettings[k] isnt true
@@ -203,7 +199,10 @@
   now: ->
     (new Date()).getTime()
   reload: ->
+    console.log "reloading"
     @clearCache()
+    @stopSubscriptions()
+    #@forceClearCollection()
     Meteor.call "#{@id}CountPages", ((e, total) ->
       @sess "totalPages", total
       p = @currentPage()
@@ -306,9 +305,10 @@
       unless p in @received or p of @cache
         #console.log "Requesting #{p}" + (if p is page then " (current)" else " (not current)")
         @recvPage p
-  checkSurplus: ->
+  forceClearCollection: ->
     count = @Collection.find().count()
-    console.log count
+    @Collection._collection.remove {}
+    '''
     if count > 0
       #@Collection._collection.remove {}
       #console.log "#{@name} too much"
@@ -319,6 +319,7 @@
             _id: i._id
         catch e
       #return @reload()
+      '''
   watch: ->
     setInterval ->
       for k, v of Pages.prototype.paginations
