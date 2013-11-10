@@ -100,6 +100,7 @@ Available to the client:
 Unavailable to the client:
 + **homeRoute (*String*, default = "/")** - if "iron-router" is enabled, the specified route sets currentPage to 1
 + **pageSizeLimit (*Number*, default = 60)** - limits the maximum number of items displayed per page
++ **rateLimit (*Number*, default = 1)** - determines the minimum interval (in seconds) between subsequent page changes
 
 
 Examples
@@ -123,7 +124,7 @@ mrt add bootstrap-3 (optional)
 Todos
 -----
 + Infinite scrolling
-+ Option to preserve the old page until new one is loaded
 + Handling dynamically incoming data with timestamp field
 + Other pagination styles
-+ TESTS!
++ Custom loader template
++ Tests

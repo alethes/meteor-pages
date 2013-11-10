@@ -1,11 +1,15 @@
 
 <template name="_pagesPage">
-  {{#if ready}}
-  {{#each items}}
-  {{{item}}}
-  {{/each}}
-  {{else}}
-  <div style="text-align:center"><img src="/packages/pages/loader.gif"/></div>{{/if}}
+  <div style="position:relative;">
+    {{#if ready}}
+    {{else}}
+    <div style="position:absolute; width:100%; text-align:center;">
+      <div style="width:80px; border: 1px solid #999; border-radius:5px; padding:10px; margin:15px; display:inline-block; background-color:white;"><img src="/packages/pages/loader.gif"/></div>
+    </div>{{/if}}
+    {{#each items}}
+    {{{item}}}
+    {{/each}}
+  </div>
 </template>
 <template name="_pagesNav">{{#if show}}
   <div style="text-align:center" data-pages="{{name}}" class="pagination-cont">

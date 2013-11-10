@@ -3,8 +3,8 @@ _.extend Template['_pagesPage'],
         @sess "ready"
     items: ->
         #console.log "Rendering"
-        p = @getPage @sess "currentPage"
-        unless p? and @sess "ready"
+        p = @getPage @sess (if @sess "ready" then "currentPage" else "oldPage")
+        unless p?
             return
         for i, k in p
             p[k]['_t'] = @itemTemplate
@@ -28,13 +28,15 @@ _.extend Template['_pagesNav'],
         @sess "currentPage"
         @paginationNeighbors()
     events:
-        "click a": _.throttle ( (e) ->
+        "click a": (e) ->
             n = e.target.parentNode.parentNode.parentNode.getAttribute 'data-pages'
             self = __Pages.prototype.paginations[n]
-            unless self.router
-                e.preventDefault()
-            self.onNavClick.call self, @n, @p
-        ), 1000
+            _.throttle (->
+                console.log 'throttle'
+                unless self.router
+                    e.preventDefault()
+                    self.onNavClick.call self, @n, @p
+            ), self.rateLimit * 1000
 
 _.extend Template['_pagesItemDefault'],
     properties: ->
