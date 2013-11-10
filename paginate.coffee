@@ -1,17 +1,13 @@
 @__Pages = class Pages
   constructor: (collection, settings = {}) ->
     @setCollection collection
-<<<<<<< HEAD
-    @setId collection
+    @setId @Collection._name
     @requested = []
     @received = []
     @queue = []
     @cache = {}
     @timeouts = {}
     @subscriptions = {}
-=======
-    @setId @Collection._name
->>>>>>> 6a5ad9c74ea7237a755502274a298441bad20d6b
     Pages.prototype.paginations[@name] = @
     for key, value of settings
       @set key, value, false
