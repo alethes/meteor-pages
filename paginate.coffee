@@ -34,6 +34,7 @@
   paginationMargin: 3
   perPage: 10
   requestTimeout: 2
+  homeRoute: "/"
   route: "/page/"
   router: false
   routerTemplate: "pages"
@@ -105,11 +106,12 @@
       t = @routerTemplate
       self = @
       Router.map ->
-        @route "home",
-            path: "/"
-            template: t
-            before: ->
-                self.sess "currentPage", 1
+        if @homeRoute
+          @route "home",
+              path: @homeRoute
+              template: t
+              before: ->
+                  self.sess "currentPage", 1
         @route "page",
             path: pr
             template: t

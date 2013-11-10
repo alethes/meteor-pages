@@ -98,6 +98,7 @@ Available to the client:
 + **templateName (*String*, defualt = "")** - A name of the template to use. Defaults to the collection's name.
 
 Unavailable to the client:
++ **homeRoute (*String*, default = "/")** - if "iron-router" is enabled, the specified route sets currentPage to 1
 + **pageSizeLimit (*Number*, default = 60)** - limits the maximum number of items displayed per page
 
 
