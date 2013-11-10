@@ -2,8 +2,9 @@ _.extend Template['_pagesPage'],
     ready: ->
         @sess "ready"
     items: ->
+        #console.log "Rendering"
         p = @getPage @sess "currentPage"
-        unless p?
+        unless p? and @sess "ready"
             return
         for i, k in p
             p[k]['_t'] = @itemTemplate

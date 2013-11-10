@@ -2,9 +2,15 @@
   constructor: (collection, settings = {}) ->
     @setCollection collection
     @setId collection
+    @requested = []
+    @received = []
+    @queue = []
+    @cache = {}
+    @timeouts = {}
+    @subscriptions = {}
     Pages.prototype.paginations[@name] = @
     for key, value of settings
-      @set key, value
+      @set key, value, false
     @setRouter()
     if Meteor.isServer
       @setMethods()
@@ -12,11 +18,10 @@
     else
       @setTemplates()
       @countPages()
-      if Pages.prototype._firstCall
-        @watchman()
+      if Pages.prototype._instances is 0 then @watch()
       @sess "currentPage", 1
       @sess "ready", true
-    Pages.prototype._firstCall = false
+    Pages.prototype._instances += 1
     return @
   dataMargin: 3
   filters: {}
@@ -33,7 +38,7 @@
   router: false
   routerTemplate: "pages"
   sort: {}
-  templateName: "" #Defaults to collection name
+  templateName: false #Defaults to collection name
   #maxChangeRate: 1000
   availableSettings:
     dataMargin: Number
@@ -50,17 +55,10 @@
     router: true #Any type. Use only in comparisons. String or Boolean expected
     routerTemplate: String
     sort: Object
-  _firstCall: true
+  _instances: 0
   _ready: true
   _currentPage: 1
-  cache: {}
   collections: {}
-  waiters: {}
-  timeouts: {}
-  subscriptions: {}
-  queue: []
-  pagesRequested: []
-  pagesReceived: []
   paginations: {}
   currentSubscription: null
   methods:
@@ -75,6 +73,8 @@
         for _k, _v of k
           @set _k, _v
   setId: (name) ->
+    if @templateName
+      name = @templateName
     if name of Pages.prototype.paginations
       n = name.match /[0-9]+$/
       if n? 
@@ -112,7 +112,7 @@
             before: ->
                 self.sess "currentPage", parseInt(@params.n)
   setTemplates: ->
-    name = if @templateName is "" then @name else @templateName
+    name = if @templateName then @templateName else @name
     Template[name].pagesNav = (->
       Template['_pagesNav'] @
     ).bind @
@@ -134,36 +134,42 @@
     else 
       @_currentPage
   isReady: ->
-    @_ready
+    @sess "ready"
   ready: (p) ->
     @_ready = true
     if p == true or p is @currentPage() and Session?
       @sess "ready", true
   stopSubscriptions: ->
     for k, v of @subscriptions
-      try
-        @Collection._collection.remove()
-      catch e
       @subscriptions[k].stop()
-      delete @subscriptions[k]
+      setTimeout ((k) ->
+        delete @subscriptions[k]
+      ).bind(@, k), 2000
+      '''
+      for i in @Collection.find().fetch()
+        try
+          @Collection._collection.remove
+            _id: i._id
+        catch e
+      '''
   loading: (p) ->
-    unless @infinite
-      @stopSubscriptions()
-      @_ready = false
-      if p is @currentPage() and Session?
-        @sess "ready", false
+    @_ready = false
+    if p is @currentPage() and Session?
+      @sess "ready", false
   logRequest: (p) ->
     @timeLastRequest = @now()
     @loading p
-    unless p in @pagesRequested
-      @pagesRequested.push(p)
+    #console.log "#{@name} Logging request #{p}"
+    unless p in @requested
+      @requested.push p
+    #console.log @requested
   logResponse: (p) ->
-    unless p in @pagesReceived
-      @pagesReceived.push(p)
+    unless p in @received
+      @received.push(p)
   clearQueue: ->
     @queue = []
-    #@pagesRequested = []
-    #@pagesReceived = []
+    #@requested = []
+    #@received = []
   sess: (k, v) ->
     k = "#{@id}.#{k}"
     #console.log k, v
@@ -171,8 +177,9 @@
       Session.set k, v
     else
       Session.get k
-  set: (k, v = undefined) ->
-    if Meteor.isClient
+  set: (k, v = undefined, reload = true) ->
+    #console.log "Set #{k} to #{v}"
+    if Meteor.isClient and reload
       Meteor.call "#{@id}Set", k, v, @reload.bind(@)
     """
     Overloading must be implemented both here and in set() method for full support for hash of options and single callback
@@ -202,20 +209,22 @@
       @sess "currentPage", p
     ).bind @
   clearCache: ->
+    #console.log "Clearing cache"
     @cache = {}
-    @pagesRequested = []
-    @pagesReceived = []
+    @requested = []
+    @received = []
   onData: (page) ->
     #console.log @name, page, 'READY'
     @currentSubscription = page
     @logResponse page
-    @ready(page)
+    @ready page
     @cache[page] = @_getPage(1).fetch()
     @checkQueue()
   checkQueue: ->
+    #console.log "#{@name} queue: #{@queue}"
     if @queue.length
       i = @queue.shift() until i in @neighbors(@currentPage()) or not @queue.length
-      @recvPage i, false
+      @recvPage i
   _getPage: (page) ->
     #console.log(page, ((page - 1) * @perPage), @perPage, @sort) if Meteor.isServer
     #console.log "Fetching last result"
@@ -227,16 +236,18 @@
       skip: skip
       limit: @perPage
   getPage: (page) ->
-    #console.log "getPage #{page}"
+    console.log "getPage #{page}"
     unless page?
       page = @currentPage()
     page = parseInt(page)
+    if page is NaN
+      return
     if Meteor.isClient
       @recvPages page
-      if page of @cache
+      if @cache[page]?
         return @cache[page]
   recvPage: (page) ->
-    #console.log "recvPage #{page}"
+    #console.log "recvPage #{@name} #{page}"
     if page of @cache
       return
     unless @_ready
@@ -245,18 +256,18 @@
         If the request concerns current page, clear the queue and execute right away.
         """
         @clearQueue()
-        @_ready = true
       else
         #console.log "Adding #{page} to queue" + (if isCurrent then " (current)" else " (not current)")
         return @queue.push page
     @logRequest page
-    #console.log 'Subscribing to ', page
+    @stopSubscriptions()
     """
     Run again if something goes wrong and the page is still needed
     """
     @timeouts[page] = setTimeout ((page) ->
-      if (page not in @pagesReceived or page not in @pagesRequested) and page in @neighbors @currentPage()
-        #console.log "Again #{page}"
+      if (page not in @received or page not in @requested) and page in @neighbors @currentPage()
+        #console.log page, page not in @received, page not in @requested, page in @neighbors @currentPage()
+        #console.log @name, "Again #{page}"
         @recvPage page
     ).bind(@, page), @requestTimeout * 1000
     """
@@ -272,18 +283,25 @@
     ).bind(@, page)
   recvPages: (page) ->
     #console.log "recvPages called for #{page}"
-    #console.log "Neighbors list: ", @neighbors page
+    #console.log "#{@name} Neighbors list: ", @neighbors page
     for p in @neighbors page
-      unless p in @pagesReceived or p of @cache
+      unless p in @received or p of @cache
         #console.log "Requesting #{p}" + (if p is page then " (current)" else " (not current)")
         @recvPage p
-  watchman: ->
+  watch: ->
     setInterval ->
       for k, v of Pages.prototype.paginations
-        Pages.prototype.watch.call v
+        p = v.currentPage()
+        console.log "#{@name} watch"
+        unless v.isReady()
+          console.log "#{@name} not ready"
+          if p in v.received
+            v.ready p
+          else unless p in v.requested
+            console.log "#{@name} page not requested"
+            v.recvPages p
+        v.checkQueue v.currentPage()
     , 1000
-  watch: ->
-    @checkQueue @currentPage()
   neighbors: (page) ->
     @n = [page]
     for d in [1 .. @dataMargin]
@@ -340,7 +358,6 @@
       n[k]['_p'] = @
     n
   onNavClick: (n, p) ->
-    cpage = @currentPage()
     total = @sess "totalPages"
     #console.log cpage, total, n, p
     page = n
