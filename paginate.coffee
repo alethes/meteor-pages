@@ -10,7 +10,7 @@
     @subscriptions = []
     Pages.prototype.paginations[@name] = @
     for key, value of settings
-      @set key, value, false
+      @set key, value, false, true
     @setRouter()
     if Meteor.isServer
       @setMethods()
@@ -21,6 +21,7 @@
       #@log "init"
       @setTemplates()
       @countPages()
+      console.log @infinite
       if @infinite
         @setInfiniteTrigger()
       if Pages.prototype._instances is 0 then @watch()
@@ -53,7 +54,6 @@
   availableSettings:
     dataMargin: Number
     filters: Object
-    infinite: Boolean
     itemTemplate: String
     navShowFirst: Boolean
     navShowLast: Boolean
@@ -79,11 +79,11 @@
       ).count() / @perPage
     "Set": (k, v = undefined) ->
       if v?
-        ch = @set k, v
+        ch = @set k, v, false, true
       else
         ch = 0
         for _k, _v of k
-          ch += @set _k, _v, true
+          ch += @set _k, _v, false, true
       ch
     "Unsubscribe": ->
       while @subscriptions.length
@@ -214,7 +214,7 @@
       Session.set k, v
     else
       Session.get k
-  set: (k, v = undefined, server = true, cb) ->
+  set: (k, v = undefined, server = true, init = false, cb) ->
     unless cb?
       cb = @reload
     if cb
@@ -223,17 +223,17 @@
     if Meteor.isClient and server
       Meteor.call "#{@id}Set", k, v, if cb then cb else undefined
     if v?
-      ch = @_set k, v
+      ch = @_set k, v, init
     else
       ch = 0
       for _k, _v of k
-        ch += @_set _k, _v
+        ch += @_set _k, _v, init
     #@log "changes: #{ch}"
     ch
-  _set: (k, v) ->
+  _set: (k, v, init = false) ->
     ch = 0
-    if k of @availableSettings
-      if @availableSettings[k] isnt true
+    if init or k of @availableSettings
+      if @availableSettings[k]? and @availableSettings[k] isnt true
         check v, @availableSettings[k]
       if JSON.stringify(@[k]) != JSON.stringify(v)
         ch = 1
@@ -473,7 +473,15 @@
       @sess "currentPage", n
   setInfiniteTrigger: ->
     window.onscroll = (_.throttle ->
-      if (window.innerHeight + window.scrollY) >= document.body.offsetHeight - @infiniteTrigger
+      t = @infiniteTrigger
+      oh = document.body.offsetHeight
+      if t > 1
+        l = oh - t
+      else if t > 0
+        l = oh * t
+      else
+        return
+      if (window.innerHeight + window.scrollY) >= l
         @sess("currentPage", @sess("currentPage") + 1)
     , @rateLimit * 1000).bind @
 

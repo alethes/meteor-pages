@@ -102,7 +102,7 @@ Available to the client:
 Unavailable to the client:
 + **homeRoute (*String*, default = "/")** - if "iron-router" is enabled, the specified route sets currentPage to 1
 + **infinite (*Boolean*, default = false)** - infinite scrolling
-+ **infiniteTrigger (*Number*, default = 600)** - if infinite scrolling is used, determines how far (in pixels) from the bottom of the page should the new data portion be requested
++ **infiniteTrigger (*Number*, default = 600)** - if infinite scrolling is used, determines how far (for val > 1: in pixels, for 0 > val >= 1: in (1 - percent)) from the bottom of the page should the new data portion be requested
 + **pageSizeLimit (*Number*, default = 60)** - limits the maximum number of items displayed per page
 + **rateLimit (*Number*, default = 1)** - determines the minimum interval (in seconds) between subsequent page changes
 
