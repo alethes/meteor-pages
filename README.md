@@ -9,6 +9,8 @@ Basic - [http://pages.meteor.com/](http://pages.meteor.com/)
 
 Multiple collections - [http://pages2.meteor.com/](http://pages2.meteor.com/)
 
+Infinite scrolling - [http://pages3.meteor.com/](http://pages3.meteor.com/)
+
 Features
 --------
 
