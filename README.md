@@ -128,3 +128,8 @@ Todos
 + Other pagination styles
 + Custom loader template
 + Tests
+
+Support
+-------
+If you find this package useful, please support its development:
+[https://www.gittip.com/alethes/](https://www.gittip.com/alethes/)
