@@ -86,7 +86,7 @@ Available to the client:
 + **navShowLast (*Boolean*, default = false)** - whether to show the link to the last page (») in the navigation panel
 + **onReloadPage1 (*Boolean*, default = false)** - determines whether to navigate to page 1 after reloading caused by a change in settings (eg. new sorting order)
 + **paginationMargin (*Number*, default = 3)** - the number of neighboring pages to display on each side of the navigation panel
-+ **perPage (*Number*, default = 10)** - number of items to display per page (can't be larger than server-imposed **pageSizeLimit**)
++ **perPage (*Number*, default = 10)** - number of items to display per page or to load per request in case of infinite scrolling (can't be larger than server-imposed **pageSizeLimit**)
 + **requestTimeout (*Number*, default = 3)** - number of seconds to wait for a response until retrying (usable mainly when there're many collections on the page)
 + **route (*String*, default = "/page/")** - route prefix used for subsequent pages (eg. "/page/" gives "/page/1", "/page/2" etc.)
 + **router (*String or Boolean*, default = false)** - Three options:
@@ -99,6 +99,8 @@ Available to the client:
 
 Unavailable to the client:
 + **homeRoute (*String*, default = "/")** - if "iron-router" is enabled, the specified route sets currentPage to 1
++ **infinite (*Boolean*, default = false)** - infinite scrolling
++ **infiniteTrigger (*Number*, default = 600)** - if infinite scrolling is used, determines how far (in pixels) from the bottom of the page should the new data portion be requested
 + **pageSizeLimit (*Number*, default = 60)** - limits the maximum number of items displayed per page
 + **rateLimit (*Number*, default = 1)** - determines the minimum interval (in seconds) between subsequent page changes
 
@@ -123,7 +125,6 @@ mrt add bootstrap-3 (optional)
 
 Todos
 -----
-+ Infinite scrolling
 + Handling dynamically incoming data with timestamp field
 + Other pagination styles
 + Custom loader template

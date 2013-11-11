@@ -21,17 +21,19 @@
       #@log "init"
       @setTemplates()
       @countPages()
+      if @infinite
+        @setInfiniteTrigger()
       if Pages.prototype._instances is 0 then @watch()
       @syncSettings ( (err, ch) ->
         if ch > 0
           @reload()
       ).bind @
-      #@sess "currentPage", 1
       Pages.prototype._instances += 1
     return @
   dataMargin: 3
   filters: {}
   infinite: false
+  infiniteTrigger: 600
   itemTemplate: "_pagesItemDefault"
   navShowFirst: false
   navShowLast: false
@@ -139,13 +141,14 @@
               template: t
               before: ->
                   self.sess "currentPage", 1
-        @route "page",
-            path: pr
-            template: t
-            before: ->
-              #self.log "route #{@params.n}"
-              self.onNavClick parseInt @params.n
-            #), (if self.rateLimit < 1 then 1000 else self.rateLimit * 1000), {leading: false}
+        unless self.infinite
+          @route "page",
+              path: pr
+              template: t
+              before: ->
+                #self.log "route #{@params.n}"
+                self.onNavClick parseInt @params.n
+              #), (if self.rateLimit < 1 then 1000 else self.rateLimit * 1000), {leading: false}
   setTemplates: ->
     name = if @templateName then @templateName else @name
     Template[name].pagesNav = (->
@@ -261,16 +264,27 @@
     @cache = {}
     @requested = []
     @received = []
+  redraw: ->
+    r = @sess "redraw"
+    @sess "redraw", if r? then r + 1 else 1
   onData: (page) ->
-    #console.log @name, page, 'READY'
+    #@log page, 'READY'
     @currentSubscription = page
     @logResponse page
     @ready page
-    @cache[page] = @_getPage(1).fetch()
-    @unsubscribe (->
-      @_bgready = false
-      @checkQueue()
-    ).bind @
+    if @infinite
+      #@log "infinite"
+      if page is 1
+        @cache[1] = @_getPage(1).fetch()
+      else
+        @cache[1] = @cache[1].concat @_getPage(1).fetch()
+      #@redraw()
+    else
+      @cache[page] = @_getPage(1).fetch()
+      @unsubscribe (->
+        @_bgready = true
+        @checkQueue()
+      ).bind @
   checkQueue: ->
     #console.log "#{@name} queue: #{@queue}"
     if @queue.length
@@ -307,8 +321,14 @@
     if page is NaN
       return
     if Meteor.isClient
-      @recvPages page
-      if @cache[page]?
+      if page < @sess "totalPages"
+        @recvPages page
+      if @infinite
+        unless @cache[1]?
+          return
+        #@log @cache[1]
+        return @cache[1].slice 0, page * @perPage
+      else if @cache[page]?
         return @cache[page]
   recvPage: (page) ->
     if page of @cache or page in @requested
@@ -320,7 +340,7 @@
     else
       @_recvPage page
   _recvPage: (page) ->
-    #console.log "recvPage #{@name} #{page}"
+    #@log "recvPage #{page}"
     @logRequest page
     """
     Run again if something goes wrong and the page is still needed
@@ -452,8 +472,11 @@
       ).bind @
       @sess "currentPage", n
   setInfiniteTrigger: ->
-    window.scroll = ->
-      (window.innerHeight + window.scrollY) >= document.body.offsetHeight - 100
+    window.onscroll = (_.throttle ->
+      if (window.innerHeight + window.scrollY) >= document.body.offsetHeight - @infiniteTrigger
+        @sess("currentPage", @sess("currentPage") + 1)
+    , @rateLimit * 1000).bind @
+
 
 Meteor.Paginate = (collection, settings) ->
   new Pages collection, settings

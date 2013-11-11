@@ -2,8 +2,10 @@ _.extend Template['_pagesPage'],
     ready: ->
         @sess "ready"
     items: ->
-        #console.log "Rendering"
+        #@log "Rendering"
+        @sess "redraw"
         p = @getPage @sess (if @sess "ready" then "currentPage" else "oldPage")
+        #@log p
         unless p?
             return
         for i, k in p
@@ -14,7 +16,7 @@ _.extend Template['_pagesPage'],
 
 _.extend Template['_pagesNav'],
     show: ->
-        1 < @sess "totalPages"
+        not @infinite and 1 < @sess "totalPages"
     link: ->
         self = @_p
         if self.router
