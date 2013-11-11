@@ -7,22 +7,27 @@
     @queue = []
     @cache = {}
     @timeouts = {}
-    @subscriptions = {}
-    @stoppers = []
+    @subscriptions = []
     Pages.prototype.paginations[@name] = @
     for key, value of settings
       @set key, value, false
     @setRouter()
     if Meteor.isServer
       @setMethods()
-      Meteor.publish @name, @_getPage.bind @
+      self = @
+      Meteor.publish @name, (page) ->
+        self.publish.call self, page, @
     else
+      #@log "init"
       @setTemplates()
       @countPages()
       if Pages.prototype._instances is 0 then @watch()
-      @sess "currentPage", 1
-      @sess "ready", true
-    Pages.prototype._instances += 1
+      @syncSettings ( (err, ch) ->
+        if ch > 0
+          @reload()
+      ).bind @
+      #@sess "currentPage", 1
+      Pages.prototype._instances += 1
     return @
   dataMargin: 3
   filters: {}
@@ -60,6 +65,7 @@
     sort: Object
   _instances: 0
   _ready: true
+  _bgready: true
   _currentPage: 1
   collections: {}
   paginations: {}
@@ -71,10 +77,29 @@
       ).count() / @perPage
     "Set": (k, v = undefined) ->
       if v?
-        @set k, v
+        ch = @set k, v
       else
+        ch = 0
         for _k, _v of k
-          @set _k, _v
+          ch += @set _k, _v, true
+      ch
+    "Unsubscribe": ->
+      while @subscriptions.length
+        #console.log @Collection._name, i
+        i = @subscriptions.shift()
+        s = i[0]
+        for j in i[1]
+          try
+            s.removed @Collection._name, j
+          catch e
+            @log e
+  log: (msg) ->
+    console.log "#{@name} #{msg}"
+  syncSettings: (cb) ->
+    S = {}
+    for k of @availableSettings
+      S[k] = @[k]
+    @set S, undefined, true, cb.bind @
   setId: (name) ->
     if @templateName
       name = @templateName
@@ -117,10 +142,10 @@
         @route "page",
             path: pr
             template: t
-            before: _.throttle(->
-                self.onNavClick parseInt @params.n
-                #sess "currentPage", parseInt(@params.n)
-            ), (if self.rateLimit < 1 then 1000 else self.rateLimit * 1000), {trailing: false}
+            before: ->
+              #self.log "route #{@params.n}"
+              self.onNavClick parseInt @params.n
+            #), (if self.rateLimit < 1 then 1000 else self.rateLimit * 1000), {leading: false}
   setTemplates: ->
     name = if @templateName then @templateName else @name
     Template[name].pagesNav = (->
@@ -149,13 +174,19 @@
     @_ready = true
     if p == true or p is @currentPage() and Session?
       @sess "ready", true
-  stopSubscriptions: ->
-    for k, v of @subscriptions
-      console.log "#{@name} stopping subscription #{k}"
-      @subscriptions[k].stop()
-      #delete @subscriptions[k]
-    #@checkSurplus()
+  unsubscribe: (cb) ->
+    #@log "unsub"
+    @call "Unsubscribe", (->
+      setTimeout ( ->
+        #@Collection._collection.remove {}
+        #@log "Collection count: " + @Collection.find().count()
+        #@log "perPage: " + @perPage
+        if cb?
+          cb()
+      ).bind(@), 500
+    ).bind(@)
   loading: (p) ->
+    @_bgready = false
     @_ready = false
     if p is @currentPage() and Session?
       @sess "ready", false
@@ -180,35 +211,50 @@
       Session.set k, v
     else
       Session.get k
-  set: (k, v = undefined, reload = true) ->
-    #console.log "Set #{k} to #{v}"
-    if Meteor.isClient and reload
-      Meteor.call "#{@id}Set", k, v, @reload.bind(@)
+  set: (k, v = undefined, server = true, cb) ->
+    unless cb?
+      cb = @reload
+    if cb
+      cb = cb.bind @
+    #@log "Set #{k} to #{v}"
+    if Meteor.isClient and server
+      Meteor.call "#{@id}Set", k, v, if cb then cb else undefined
     if v?
-      @_set k, v
+      ch = @_set k, v
     else
+      ch = 0
       for _k, _v of k
-        @_set _k, _v
+        ch += @_set _k, _v
+    #@log "changes: #{ch}"
+    ch
   _set: (k, v) ->
+    ch = 0
     if k of @availableSettings
       if @availableSettings[k] isnt true
         check v, @availableSettings[k]
+      if JSON.stringify(@[k]) != JSON.stringify(v)
+        ch = 1
       @[k] = v
     else
       new Meteor.Error 400, "Setting not available."
+    ch
   now: ->
     (new Date()).getTime()
+  call: (method, cb) ->
+    Meteor.call @id + method, cb.bind(@)
   reload: ->
-    console.log "reloading"
+    #console.log "reloading"
     @clearCache()
-    @stopSubscriptions()
-    #@forceClearCollection()
-    Meteor.call "#{@id}CountPages", ((e, total) ->
-      @sess "totalPages", total
-      p = @currentPage()
-      p = 1 if @onReloadPage1 or p > total
-      @sess "currentPage", false
-      @sess "currentPage", p
+    @unsubscribe (->
+      @call "CountPages", ((e, total) ->
+        @sess "totalPages", total
+        p = @currentPage()
+        if (not p?) or @onReloadPage1 or p > total
+          p = 1
+        #@log "Page #{p}"
+        @sess "currentPage", false
+        @sess "currentPage", p
+      ).bind @
     ).bind @
   clearCache: ->
     #console.log "Clearing cache"
@@ -221,28 +267,37 @@
     @logResponse page
     @ready page
     @cache[page] = @_getPage(1).fetch()
-    #@stopSubscriptions()
-    @checkQueue()
+    @unsubscribe (->
+      @_bgready = false
+      @checkQueue()
+    ).bind @
   checkQueue: ->
     #console.log "#{@name} queue: #{@queue}"
     if @queue.length
       i = @queue.shift() until i in @neighbors(@currentPage()) or not @queue.length
-      @recvPage i
+      if i in @neighbors(@currentPage())
+        @recvPage i
+  setPerPage: ->
+    @perPage = if @pageSizeLimit < @perPage then @pageSizeLimit else @perPage
+  publish: (page, sub) ->
+    @setPerPage()
+    #console.log "publishing #{page} #{sub} #{@perPage}"
+    skip = (page - 1) * @perPage
+    skip = 0 if skip < 0
+    c = @Collection.find @filters,
+      sort: @sort
+      skip: skip
+      limit: @perPage
+    ids = _.pluck c.fetch(), "_id"
+    @subscriptions.push [sub, ids]
+    c
   _getPage: (page) ->
     #console.log(page, ((page - 1) * @perPage), @perPage, @sort) if Meteor.isServer
     #console.log "Fetching last result"
-    @perPage = if @pageSizeLimit < @perPage then @pageSizeLimit else @perPage
-    if Meteor.isClient
-      @Collection.find {},
-        skip: @Collection.find().count() - @perPage
-        limit: @perPage
-    else
-      skip = (page - 1) * @perPage
-      skip = 0 if skip < 0
-      @Collection.find @filters,
-        sort: @sort
-        skip: skip
-        limit: @perPage
+    @setPerPage()
+    @Collection.find {},
+      skip: @Collection.find().count() - @perPage
+      limit: @perPage
 
   getPage: (page) ->
     #console.log "getPage #{page}"
@@ -256,7 +311,7 @@
       if @cache[page]?
         return @cache[page]
   recvPage: (page) ->
-    if page of @cache
+    if page of @cache or page in @requested
       return
     if page is @currentPage()
       @clearQueue()
@@ -264,17 +319,6 @@
       @queue.push page
     else
       @_recvPage page
-      '''
-      @stoppers.push setInterval ((page, id) ->
-        #console.log "#{@name} waiting for subscription #{id} to stop #{@Collection.find().count()}"
-        if @Collection.find().count() is 0
-          clearInterval @stoppers[id]
-          @_recvPage page
-        else
-          @stopSubscriptions()
-          @checkSurplus()
-      ).bind(@, page, @stoppers.length), 100
-      '''
   _recvPage: (page) ->
     #console.log "recvPage #{@name} #{page}"
     @logRequest page
@@ -307,8 +351,6 @@
         @recvPage p
   forceClearCollection: ->
     count = @Collection.find().count()
-    @Collection._collection.remove {}
-    '''
     if count > 0
       #@Collection._collection.remove {}
       #console.log "#{@name} too much"
@@ -319,14 +361,18 @@
             _id: i._id
         catch e
       #return @reload()
-      '''
   watch: ->
     setInterval ->
       for k, v of Pages.prototype.paginations
+        #v.log "watch"
         #v.checkSurplus()
         p = v.currentPage()
         #console.log "#{@name} watch"
-        unless v.isReady()
+        if v.isReady()
+          for i in document.querySelectorAll '.pagination-items'
+            if i.children.length is 0
+              v.sess "ready", false
+        else
           #console.log "#{@name} not ready"
           if p in v.received
             v.ready p
@@ -334,7 +380,7 @@
             #console.log "#{@name} page not requested"
             v.recvPages p
         if v.cache[p]? and v.cache[p].length is 0
-          console.log "#{v.name} 0 results"
+          #@log "0 results"
           return v.reload()
         v.checkQueue v.currentPage()
     , 1000
@@ -343,10 +389,12 @@
     if @dataMargin is 0
       return @n
     for d in [1 .. @dataMargin]
-      @n.push page + d
-      dd = page - d
-      if dd > 0
-        @n.push dd
+      np = page + d
+      if np <= @sess "totalPages"
+        @n.push np
+      pp = page - d
+      if pp > 0
+        @n.push pp
     @n
   paginationNeighbors: ->
     page = @currentPage()
@@ -397,9 +445,11 @@
     n
   onNavClick: (n) ->
     total = @sess "totalPages"
-    #console.log cpage, total, n, p
+    #@log "Nav click #{n} #{total}"
     if n <= total and n > 0
-      @sess "oldPage", @sess "currentPage"
+      Deps.nonreactive (->
+        @sess "oldPage", @sess "currentPage"
+      ).bind @
       @sess "currentPage", n
   setInfiniteTrigger: ->
     window.scroll = ->
