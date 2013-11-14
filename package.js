@@ -5,9 +5,12 @@ Package.describe({
 Package.on_use(function(api){
     api.use([
         "deps",
-        "templating",
         "underscore",
-        "coffeescript",
+        "coffeescript"
+    ]);
+
+    api.use([
+        "templating",
         "handlebars",
         "spark",
         "session"
@@ -16,12 +19,13 @@ Package.on_use(function(api){
     api.use([
         "deps",
         "underscore",
-        "coffeescript"
+        "coffeescript",
+        "check"
     ], "server");
 
     api.add_files([
         "paginate.coffee"
-    ], ["client", "server"]);
+    ]);
 
     api.add_files([
         "client/templates.html",
@@ -29,20 +33,17 @@ Package.on_use(function(api){
         "client/pages.css",
         "loader.gif"
     ], "client");
-    /*
-    api.export([
-        "_Paginate",
-        "_PaginateInstances"
-    ], ["client", "server"]);
-    */
 });
 
 Package.on_test(function(api){
     api.use([
         "deps",
-        "templating",
         "underscore",
-        "coffeescript",
+        "coffeescript"
+    ]);
+
+    api.use([
+        "templating",
         "handlebars",
         "spark",
         "session"
@@ -51,17 +52,13 @@ Package.on_test(function(api){
     api.use([
         "deps",
         "underscore",
-        "coffeescript"
+        "coffeescript",
+        "check"
     ], "server");
-
-    api.use([
-        "tinytest",
-        "test-helpers"
-    ], ["client", "server"]);
 
     api.add_files([
         "tests.coffee"
-    ], ["client", "server"]);
+    ]);
 
     api.add_files([
         "client/templates.html",
