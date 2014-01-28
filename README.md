@@ -1,8 +1,8 @@
 Meteor Pages
 ============
 
-State of the art, out of the box Meteor pagination.
----------------------------------------------------
+State of the art, out of the box Meteor pagination
+--------------------------------------------------
 Live demos: 
 
 Basic - [http://pages.meteor.com/](http://pages.meteor.com/)
@@ -96,7 +96,7 @@ Available to the client:
    - *false* - no router used
    - *"iron-router"* - *iron-router* is used and the routes are automatically set up by *pages*
 + **routerTemplate (*String*, default = "pages")** - a template used by *iron-router* to generate paging 
-+ **sort (*Object*, defualt = {})** - MongoDB sort determining object, eg. {name: 1}
++ **sort (*Object*, default = {})** - MongoDB sort determining object, eg. {name: 1}
 + **templateName (*String*, defualt = "")** - A name of the template to use. Defaults to the collection's name.
 
 Unavailable to the client:
