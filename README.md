@@ -120,7 +120,7 @@ If you experience any problems, make sure all the dependencies are installed (us
 
 Todos
 -----
-+ [Reactivity](https://github.com/alethes/meteor-pages/issues/16P
++ [Reactivity](https://github.com/alethes/meteor-pages/issues/16P)
 + Handling dynamically incoming data with timestamp field
 + Other pagination styles
 + Custom loader template
