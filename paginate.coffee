@@ -49,6 +49,7 @@
   router: false
   routerTemplate: "pages"
   sort: {}
+  fields: {}
   templateName: false #Defaults to collection name
   #maxChangeRate: 1000
   availableSettings:
@@ -65,6 +66,7 @@
     router: true #Any type. Use only in comparisons. String or Boolean expected
     routerTemplate: String
     sort: Object
+    fields: Object
   _instances: 0
   _ready: true
   _bgready: true
@@ -300,6 +302,7 @@
     skip = 0 if skip < 0
     c = @Collection.find @filters,
       sort: @sort
+      fields: @fields
       skip: skip
       limit: @perPage
     ids = _.pluck c.fetch(), "_id"
