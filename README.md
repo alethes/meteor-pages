@@ -110,23 +110,17 @@ Unavailable to the client:
 Examples
 --------
 
-Currently there're just two examples. One demonstrates the most basic usage and the other shows how to easily integrate *pages* with iron-router. If you experience any problems, make sure all the dependencies are installed (using Meteorite).
-Basic example:
-```
-meteor add coffeescript
-mrt add pages
-mrt add bootstrap-3 (optional)
-```
-Iron-router:
-```
-meteor add coffeescript
-mrt add pages
-mrt add iron-router
-mrt add bootstrap-3 (optional)
-```
+Currently there are only three examples:
+
+* most basic usage
+* how to easily integrate *pages* with iron-router
+* using multiple collections
+
+If you experience any problems, make sure all the dependencies are installed (using Meteorite). Just run `mrt install` and Meteorite will install the dependencies.
 
 Todos
 -----
++ [Reactivity](https://github.com/alethes/meteor-pages/issues/16P
 + Handling dynamically incoming data with timestamp field
 + Other pagination styles
 + Custom loader template
