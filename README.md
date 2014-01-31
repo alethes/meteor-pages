@@ -97,7 +97,7 @@ Available to the client:
    - *"iron-router"* - *iron-router* is used and the routes are automatically set up by *pages*
 + **routerTemplate (*String*, default = "pages")** - a template used by *iron-router* to generate paging 
 + **sort (*Object*, default = {})** - MongoDB sort determining object, eg. {name: 1}
-+ **templateName (*String*, defualt = "")** - A name of the template to use. Defaults to the collection's name.
++ **templateName (*String*, default = "")** - A name of the template to use. Defaults to the collection's name.
 
 Unavailable to the client:
 + **homeRoute (*String*, default = "/")** - if "iron-router" is enabled, the specified route sets currentPage to 1
