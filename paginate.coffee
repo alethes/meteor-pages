@@ -1,6 +1,7 @@
 @__Pages = class Pages
   constructor: (collection, settings = {}) ->
     @setCollection collection
+    @Collection or throw "Pages can't find the <" + collection + "> collection";
     @setId @Collection._name
     @requested = []
     @received = []
