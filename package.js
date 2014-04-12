@@ -12,7 +12,7 @@ Package.on_use(function(api){
     api.use([
         "templating",
         "handlebars",
-        "spark",
+        "ui",
         "session"
     ], "client");
 
@@ -45,7 +45,7 @@ Package.on_test(function(api){
     api.use([
         "templating",
         "handlebars",
-        "spark",
+        "ui",
         "session"
     ], "client");
 
