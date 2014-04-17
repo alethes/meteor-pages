@@ -23,6 +23,8 @@
   pageSizeLimit: 60
   rateLimit: 1
   homeRoute: "/"
+  pageTemplate: "_pagesPage"
+  navTemplate: "_pagesNav"
   templateName: false #Defaults to collection name
   _ninstances: 0
   _ready: true
@@ -50,12 +52,6 @@
         i = @subscriptions.shift()
         continue  unless i?
         i.stop()
-        #s = i[0]
-        #for j in i[1]
-        #  try
-        #    s.removed @Collection._name, j
-        #  catch e
-        #    @log e
   constructor: (collection, settings) ->
     @setCollection collection
     @setDefaults()
@@ -210,8 +206,8 @@
   setTemplates: ->
     name = if @templateName then @templateName else @name
     Template[name].pagesData = @
-    Template[name].pagesNav = Template['_pagesNav']
-    Template[name].pages = Template['_pagesPage']
+    Template[name].pagesNav = Template[@pagesNav]
+    Template[name].pages = Template[@pagesTemplate]
   countPages: ->  
     Meteor.call @getMethod("CountPages"), ((e, r) ->
       @sess "totalPages", r
