@@ -1,13 +1,16 @@
-
+<template name="pages">
+</template>
+<template name="pagesNav">
+</template>
 <template name="_pagesPage">
   <div style="position:relative;" class="pagination-items">
     {{#if ready}}
     {{else}}
     <div style="position:absolute; width:100%; text-align:center;">
-      <div style="width:80px; border: 1px solid #999; border-radius:5px; padding:10px; margin:15px; display:inline-block; background-color:white;"><img src="/packages/pages/loader.gif"/></div>
+      <div style="width:80px; border: 1px solid #999; border-radius:5px; padding:10px; margin:15px; display:inline-block; background-color:white;"><img src="/packages/pages/public/loader.gif"/></div>
     </div>{{/if}}
     {{#each items}}
-    {{{item}}}
+    {{> item}}
     {{/each}}
   </div>
 </template>
@@ -19,7 +22,7 @@
   </div>{{/if}}
 </template>
 <template name="_pagesItemDefault">
-  <div style="margin:5px 40px; padding: 10px; border: 1px solid #999; border-radius: 15px;">{{#each properties}}
+  <div class="pagesItemDefault">{{#each properties}}
     <div><i>{{name}}</i>: {{value}}</div>{{/each}}
   </div>
 </template>

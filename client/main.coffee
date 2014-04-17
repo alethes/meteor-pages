@@ -2,17 +2,14 @@ _.extend Template['_pagesPage'],
     ready: ->
         @sess "ready"
     items: ->
-        #@log "Rendering"
         @sess "redraw"
-        p = @getPage @sess (if @sess "ready" then "currentPage" else "oldPage")
-        #@log p
-        unless p?
-            return
+        p = @getPage @sess (@sess("ready") ? "currentPage" : "oldPage")
+        return [] unless p?
         for i, k in p
             p[k]['_t'] = @itemTemplate
         p
     item: ->
-        Template[@_t] @
+        Template[@_t]
 
 _.extend Template['_pagesNav'],
     show: ->
@@ -32,7 +29,7 @@ _.extend Template['_pagesNav'],
     events:
         "click a": (e) ->
             n = e.target.parentNode.parentNode.parentNode.getAttribute 'data-pages'
-            self = __Pages.prototype.paginations[n]
+            self = Meteor.Pagination::instances[n]
             (_.throttle (e, self, n) ->
                 unless self.router
                     e.preventDefault()
@@ -43,7 +40,7 @@ _.extend Template['_pagesItemDefault'],
     properties: ->
         A = []
         for k, v of @
-            unless k in ["_id", "_t"]
+            if k[0] isnt "_"
                 A.push
                     name: k
                     value: v

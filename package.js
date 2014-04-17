@@ -24,14 +24,14 @@ Package.on_use(function(api){
     ], "server");
 
     api.add_files([
-        "paginate.coffee"
+        "lib/pages.coffee"
     ]);
 
     api.add_files([
         "client/templates.html",
         "client/main.coffee",
-        "client/pages.css",
-        "loader.gif"
+        "client/main.css",
+        "public/loader.gif"
     ], "client");
 });
 
@@ -57,13 +57,14 @@ Package.on_test(function(api){
     ], "server");
 
     api.add_files([
-        "tests.coffee"
+        "lib/pages.coffee",
+        "test/tests.coffee"
     ]);
 
     api.add_files([
         "client/templates.html",
         "client/main.coffee",
-        "client/pages.css",
-        "loader.gif"
+        "client/main.css",
+        "public/loader.gif"
     ], "client");
 });

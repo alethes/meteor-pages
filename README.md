@@ -3,7 +3,10 @@ Meteor Pages
 
 State of the art, out of the box Meteor pagination
 --------------------------------------------------
-Live demos: 
+
+As of version 1.0.0, following a major overhaul, the module is fully compatible with Blaze (Meteor 0.8.0+) and features native reactivity support.
+
+Live demos (using older version, will be updated soon): 
 
 Basic - [http://pages.meteor.com/](http://pages.meteor.com/)
 
@@ -23,6 +26,7 @@ Features
 + **Bootstrap 2/3-compatible navigation template**. The package itself borrows some CSS from Bootstrap 3 to ensure good looks without dependency, but can be re-styled easily.
 + **Failure resistance**. Accounts for multiple scenarios of failure.
 + **Built-in iron-router integration**. Binds easily to any other router.
++ **Infinite scrolling**. Easily controlled and fully leveraging the package's powerful features.
 + **Trivial customization on the fly**. Items per page, sorting, filters and more adjustable on the fly! Just modify a setting and see the pagination redrawing.
 
 Installation
@@ -32,10 +36,10 @@ Meteorite:
 
 Basic usage
 -----------
-Javascript/Coffeescript (server- and client-side):
+JavaScript/CoffeScript (in common code, running on both the server and the client):
 
 `
-Pages = Meteor.Paginate("collection-name")
+Pages = new Meteor.Pagination("collection-name")
 `
 
 and HTML:
@@ -44,11 +48,11 @@ and HTML:
     {{> collection-name}}
 </body>
 <template name="collection-name">
-    {{{pagesNav}}} <!--Top navigation--> 
+    {{> pagesNav pagesData}} <!--Top navigation--> 
     <div style="min-height:500px">
-    {{{pages}}}
+    {{> pages pagesData}}
     </div>
-    {{{pagesNav}}} <!--Bottom navigation-->
+    {{> pagesNav pagesData}} <!--Bottom navigation-->
 </template>
 ```
 
@@ -62,7 +66,7 @@ There are two ways to modify settings:
 
 1. In common code, during declaration (client and server):
 
-```
+```CoffeeScript:
 @Pages = Meteor.Paginate "collection-name",
     perPage: 20
     sort: 
@@ -73,7 +77,7 @@ There are two ways to modify settings:
 ```
 2. Client-side code / common code (client and server), after declaration:
 
-```
+```CoffeeScript:
 Pages.set
   perPage: 10
   sort:
@@ -102,28 +106,30 @@ Available to the client:
 Unavailable to the client:
 + **homeRoute (*String*, default = "/")** - if "iron-router" is enabled, the specified route sets currentPage to 1
 + **infinite (*Boolean*, default = false)** - infinite scrolling
++ **infiniteItemsLimit (*Number*, default = Infinity)** - the maximum number of items to display at once in infinite scrolling mode. If the number (n) is less then Infinity only the last n items are displayed on the page.
 + **infiniteTrigger (*Number*, default = 600)** - if infinite scrolling is used, determines how far (for val > 1: in pixels, for 0 > val >= 1: in (1 - percent)) from the bottom of the page should the new data portion be requested
 + **pageSizeLimit (*Number*, default = 60)** - limits the maximum number of items displayed per page
 + **rateLimit (*Number*, default = 1)** - determines the minimum interval (in seconds) between subsequent page changes
++ **infiniteRateLimit (*Number*, default = 1)** - determines the minimum interval (in seconds) between subsequent page changes in infinite scrolling mode
 
 
 Examples
 --------
 
-Currently there are only three examples:
+THE EXAMPLES FOR VERSION 1.0.0 ARE TEMPORARILY UNAVAILABLE
+
+Currently, there are three examples:
 
 * most basic usage
-* how to easily integrate `pages` with `iron-router`
+* `iron-router` integrations
 * using multiple collections
 
 If you experience any problems, make sure all the dependencies are installed (using Meteorite). Just run `mrt install` and Meteorite will install the dependencies. CoffeeScript is also required, so run `meteor add coffeescript`.
 
 Todos
 -----
-+ [Reactivity](https://github.com/alethes/meteor-pages/issues/16)
-+ Handling dynamically incoming data with timestamp field
-+ Other pagination styles
-+ Custom loader template
++ Implementing performance optimized live sort for modified/incoming data
++ Support for a custom loading template
 + Tests
 
 Support
