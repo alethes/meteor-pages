@@ -207,7 +207,7 @@
     name = if @templateName then @templateName else @name
     Template[name].pagesData = @
     Template[name].pagesNav = Template[@pagesNav]
-    Template[name].pages = Template[@pagesTemplate]
+    Template[name].pages = Template[@pageTemplate]
   countPages: ->  
     Meteor.call @getMethod("CountPages"), ((e, r) ->
       @sess "totalPages", r
