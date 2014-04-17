@@ -2,13 +2,17 @@
 </template>
 <template name="pagesNav">
 </template>
+<template name="_pagesLoading">
+  <div class="pagesLoadingDefaultCont">
+    <div class="pagesLoadingDefault"><img src="/packages/pages/public/loader.gif"/></div>
+  </div>
+</template>
 <template name="_pagesPage">
   <div style="position:relative;" class="pagination-items">
     {{#if ready}}
     {{else}}
-    <div style="position:absolute; width:100%; text-align:center;">
-      <div style="width:80px; border: 1px solid #999; border-radius:5px; padding:10px; margin:15px; display:inline-block; background-color:white;"><img src="/packages/pages/public/loader.gif"/></div>
-    </div>{{/if}}
+    {{> _pagesLoading}}
+    {{/if}}
     {{#each items}}
     {{> item}}
     {{/each}}

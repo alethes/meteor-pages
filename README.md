@@ -131,7 +131,6 @@ If you experience any problems, make sure all the dependencies are installed (us
 Todos
 -----
 + Implementing performance optimized live sort for modified/incoming data
-+ Support for a custom loading template
 + Tests
 
 Support
