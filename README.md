@@ -104,6 +104,7 @@ Available to the client:
 + **templateName (*String*, default = "")** - A name of the template to use. Defaults to the collection's name.
 
 Unavailable to the client:
++ **fastRender (*Boolean*, default = false)** - determines whether *fast-render* is used to speed up page loading
 + **homeRoute (*String*, default = "/")** - if "iron-router" is enabled, the specified route sets currentPage to 1
 + **infinite (*Boolean*, default = false)** - infinite scrolling
 + **infiniteItemsLimit (*Number*, default = Infinity)** - the maximum number of items to display at once in infinite scrolling mode. If the number (n) is less then Infinity only the last n items are displayed on the page.
@@ -118,12 +119,12 @@ Unavailable to the client:
 Examples
 --------
 
-THE EXAMPLES FOR VERSION 1.0.0 ARE TEMPORARILY UNAVAILABLE
+THE EXAMPLES FOR v1.0.0+ ARE TEMPORARILY UNAVAILABLE
 
 Currently, there are three examples:
 
 * most basic usage
-* `iron-router` integrations
+* *iron-router* integrations
 * using multiple collections
 
 If you experience any problems, make sure all the dependencies are installed (using Meteorite). Just run `mrt install` and Meteorite will install the dependencies. CoffeeScript is also required, so run `meteor add coffeescript`.

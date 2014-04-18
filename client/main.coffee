@@ -4,6 +4,7 @@ _.extend Template['_pagesPageCont'],
 
 _.extend Template['_pagesPage'],
   ready: ->
+    return true  if @fastRender
     @sess "ready"
   items: ->
     p = @getPage @sess (if @sess("ready") then "currentPage" else "oldPage")
