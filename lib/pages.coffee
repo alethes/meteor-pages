@@ -204,7 +204,7 @@
             template: t
             onBeforeAction: ->
               self.onNavClick parseInt @params.n
-      if Meteor.isServer
+      if Meteor.isServer and @fastRender
         FastRender.route "#{@route}:n", (params) ->
           Meteor.subscribe @name, page
           
