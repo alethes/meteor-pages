@@ -56,18 +56,18 @@ and HTML:
 </template>
 ```
 
-Of course, you can use any variable to store the object returned by `Meteor.Paginate()`, not necessarily `Pages`.
+Of course, you can use any variable to store the object returned by `new Meteor.Pagination()`, not necessarily `Pages`.
 
 Settings
 --------
-Settings can be passed as a second argument to `Meteor.Paginate()`. Almost all of them can be changed on the client-side, causing immediate redrawing.
+Settings can be passed as a second argument to `Meteor.Pagination()`. Almost all of them can be changed on the client-side, causing immediate redrawing.
 
 There are two ways to modify settings:
 
 1. In common code, during declaration (client and server):
 
 ```CoffeeScript:
-@Pages = Meteor.Paginate "collection-name",
+@Pages = new Meteor.Pagination "collection-name",
     perPage: 20
     sort: 
         title: 1

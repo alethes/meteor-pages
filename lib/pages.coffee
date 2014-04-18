@@ -225,13 +225,19 @@
     self = @
     handle = @Collection.find().observeChanges
       changed: ((subscription, id, fields) ->
-        subscription.changed @id, id, fields
+        try
+          subscription.changed @id, id, fields
+        catch e
       ).bind @, subscription
       added: ((subscription, id, fields) ->
-        subscription.added @id, id, fields  unless init
+        try
+          subscription.added @id, id, fields  unless init
+        catch e
       ).bind @, subscription
       removed: ((subscription, id) ->
-        subscription.removed @id, id
+        try
+          subscription.removed @id, id
+        catch e
       ).bind @, subscription
     init = false
     n = 0
