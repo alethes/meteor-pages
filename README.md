@@ -104,7 +104,7 @@ Available to the client:
 + **templateName (*String*, default = "")** - A name of the template to use. Defaults to the collection's name.
 
 Unavailable to the client:
-+ **fastRender (*Boolean*, default = false)** - determines whether *fast-render* is used to speed up page loading
++ **fastRender (*Boolean*, default = false)** - determines whether *fast-render* package should be used to speed up page loading
 + **homeRoute (*String*, default = "/")** - if "iron-router" is enabled, the specified route sets currentPage to 1
 + **infinite (*Boolean*, default = false)** - infinite scrolling
 + **infiniteItemsLimit (*Number*, default = Infinity)** - the maximum number of items to display at once in infinite scrolling mode. If the number (n) is less then Infinity only the last n items are displayed on the page.
