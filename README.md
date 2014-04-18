@@ -43,16 +43,16 @@ Pages = new Meteor.Pagination("collection-name")
 `
 
 and HTML:
-```
+```html
 <body>
     {{> collection-name}}
 </body>
 <template name="collection-name">
-    {{> pagesNav pagesData}} <!--Top navigation--> 
+    {{> pagesNav pagesData}}  <!--Top navigation--> 
     <div style="min-height:500px">
     {{> pages pagesData}}
     </div>
-    {{> pagesNav pagesData}} <!--Bottom navigation-->
+    {{> pagesNav pagesData}}  <!--Bottom navigation-->
 </template>
 ```
 
