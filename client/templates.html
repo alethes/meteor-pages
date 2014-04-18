@@ -7,23 +7,36 @@
     <div class="pagesLoadingDefault"><img src="/packages/pages/public/loader.gif"/></div>
   </div>
 </template>
-<template name="_pagesPage">
-  <div style="position:relative;" class="pagination-items">
-    {{#if ready}}
-    {{else}}
-    {{> _pagesLoading}}
-    {{/if}}
-    {{#each items}}
-    {{> item}}
-    {{/each}}
-  </div>
+<template name="_pagesPageCont">
+  {{#if wrapper}}
+    <div class="{{wrapper}}">
+    {{> _pagesPage pagesData}}
+    </div>
+  {{else}}
+    {{> _pagesPage pagesData}}
+  {{/if}}
 </template>
-<template name="_pagesNav">{{#if show}}
-  <div style="text-align:center" data-pages="{{name}}" class="pagination-cont">
-    <ul class="pagination">{{#each paginationNeighbors}}
-      <li class="{{active}} {{disabled}}"><a href="{{link}}">{{p}}</a></li>{{/each}}
-    </ul>
-  </div>{{/if}}
+<template name="_pagesPage">
+  {{#if ready}}
+  {{else}}
+    {{> _pagesLoading}}
+  {{/if}}
+  {{#each items}}
+    {{> item}}
+  {{/each}}
+</template>
+<template name="_pagesNav">
+  {{#if show}}
+    <div style="text-align:center" data-pages="{{name}}" class="pagination-cont">
+      <ul class="pagination">
+      {{#each paginationNeighbors}}
+        <li class="{{active}} {{disabled}}">
+          <a href="{{link}}">{{p}}</a>
+        </li>
+      {{/each}}
+      </ul>
+    </div>
+  {{/if}}
 </template>
 <template name="_pagesItemDefault">
   <div class="pagesItemDefault">{{#each properties}}

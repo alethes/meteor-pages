@@ -1,6 +1,7 @@
 @__Pages = class Pages
   availableSettings:
     dataMargin: [Number, 3]
+    divWrapper: [true, false] #If defined, should be a name of the wrapper's CSS classname
     filters: [Object, {}]
     itemTemplate: [String, "_pagesItemDefault"]
     navShowFirst: [Boolean, true]
@@ -23,7 +24,7 @@
   pageSizeLimit: 60
   rateLimit: 1
   homeRoute: "/"
-  pageTemplate: "_pagesPage"
+  pageTemplate: "_pagesPageCont"
   navTemplate: "_pagesNav"
   templateName: false #Defaults to collection name
   _ninstances: 0
@@ -178,9 +179,9 @@
       catch e
         isNew = false
         @Collection = Pages::collections[@name]
-        @Collection or throw "The <#{collection}> collection 
+        @Collection or new Meteor.Error "The <#{collection}> collection 
         was defined outside of Pages. Pass the collection object
-        instead of collection name to the constructor."
+        instead of collection name to the Meteor.Pagination constructor."
     @setId @Collection._name
     @PaginatedCollection = new Meteor.Collection @id
   setRouter: ->
@@ -209,6 +210,7 @@
     Template[name].pagesData = @
     Template[name].pagesNav = Template[@navTemplate]
     Template[name].pages = Template[@pageTemplate]
+    Template[name].pages.pagesData = @
   countPages: ->  
     Meteor.call @getMethod("CountPages"), ((e, r) ->
       @sess "totalPages", r
@@ -380,7 +382,6 @@
         ).fetch()
       c
   requestPage: (page) ->
-    @log "requesting " + page
     return  if page in @requested
     @clearQueue()  if page is @currentPage()
     @queue.push page
