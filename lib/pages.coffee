@@ -16,6 +16,7 @@
     sort: [Object, {}]
     fields: [Object, {}]
   #The following settings are unavailable to the client after initialization
+  fastRender: false
   infinite: false
   infiniteItemsLimit: 30
   infiniteTrigger: .8
@@ -28,8 +29,6 @@
   navTemplate: "_pagesNav"
   templateName: false #Defaults to collection name
   _ninstances: 0
-  _ready: true
-  _bgready: true
   _currentPage: 1
   collections: {}
   instances: {}
@@ -205,6 +204,10 @@
             template: t
             onBeforeAction: ->
               self.onNavClick parseInt @params.n
+      if Meteor.isServer
+        FastRender.route "#{@route}:n", (params) ->
+          Meteor.subscribe @name, page
+          
   setPerPage: ->
     @perPage = if @pageSizeLimit < @perPage then @pageSizeLimit else @perPage
   setTemplates: ->
@@ -258,9 +261,7 @@
     @subscriptions.push subscription
     c
   loading: (p) ->
-    @_bgready = false
-    @_ready = false
-    if p is @currentPage() and Session?
+    if not @fastRender and p is @currentPage() and Session?
       @sess "ready", false
   now: ->
     (new Date()).getTime()
@@ -349,7 +350,6 @@
   isReady: ->
     @sess "ready"
   ready: (p) ->
-    @_ready = true
     if p == true or p is @currentPage() and Session?
       @sess "ready", true
 
@@ -374,7 +374,7 @@
           skip: if @infiniteItemsLimit isnt Infinity and n > @infiniteItemsLimit then n - @infiniteItemsLimit else 0
           limit: @infiniteItemsLimit
         ).fetch()
-      else if page in @received
+      else #if page in @received
         c = @PaginatedCollection.find(
           _.object([
             ["_#{@id}_p", page]
