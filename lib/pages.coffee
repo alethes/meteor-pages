@@ -194,6 +194,7 @@
             path: self.homeRoute
             template: t
             onBeforeAction: ->
+              self.sess "oldPage", 1
               self.sess "currentPage", 1
         unless self.infinite
           @route "page",
@@ -349,11 +350,13 @@
       @sess "ready", true
 
   getPage: (page) ->
-    page = @currentPage()  unless page?
-    page = parseInt(page)
-    return  if page is NaN
     if Meteor.isClient
-      if page <= @sess "totalPages"
+      page = @currentPage()  unless page?
+      page = parseInt page
+      return  if page is NaN
+      total = @sess "totalPages"
+      return @ready true  if total is 0
+      if page <= total
         for p in @neighbors page
           @requestPage p  unless p in @received
       if @infinite
@@ -377,6 +380,7 @@
         ).fetch()
       c
   requestPage: (page) ->
+    @log "requesting " + page
     return  if page in @requested
     @clearQueue()  if page is @currentPage()
     @queue.push page

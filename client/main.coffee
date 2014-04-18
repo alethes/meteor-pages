@@ -2,9 +2,8 @@ _.extend Template['_pagesPage'],
     ready: ->
         @sess "ready"
     items: ->
-        @sess "redraw"
-        p = @getPage @sess (@sess("ready") ? "currentPage" : "oldPage")
-        return [] unless p?
+        p = @getPage @sess (if @sess("ready") then "currentPage" else "oldPage")
+        return []  unless p?
         for i, k in p
             p[k]['_t'] = @itemTemplate
         p
