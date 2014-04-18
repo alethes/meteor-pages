@@ -104,6 +104,7 @@ Available to the client:
 + **templateName (*String*, default = "")** - A name of the template to use. Defaults to the collection's name.
 
 Unavailable to the client:
++ **divWrapper (*String*, default = false)** - if provided, the Pagination page is wrapped in a div with the provided class name
 + **fastRender (*Boolean*, default = false)** - determines whether *fast-render* package should be used to speed up page loading
 + **homeRoute (*String*, default = "/")** - if "iron-router" is enabled, the specified route sets currentPage to 1
 + **infinite (*Boolean*, default = false)** - infinite scrolling

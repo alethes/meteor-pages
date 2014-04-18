@@ -26,7 +26,7 @@
   rateLimit: 1
   homeRoute: "/"
   pageTemplate: "_pagesPageCont"
-  navTemplate: "_pagesNav"
+  navTemplate: "_pagesNavCont"
   templateName: false #Defaults to collection name
   _ninstances: 0
   _currentPage: 1
@@ -214,6 +214,7 @@
     name = if @templateName then @templateName else @name
     Template[name].pagesData = @
     Template[name].pagesNav = Template[@navTemplate]
+    Template[name].pagesNav.pagesData = @
     Template[name].pages = Template[@pageTemplate]
     Template[name].pages.pagesData = @
   countPages: ->  

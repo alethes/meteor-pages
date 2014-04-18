@@ -25,6 +25,9 @@
     {{> item}}
   {{/each}}
 </template>
+<template name="_pagesNavCont">
+  {{> _pagesNav pagesData}}
+</template>
 <template name="_pagesNav">
   {{#if show}}
     <div style="text-align:center" data-pages="{{name}}" class="pagination-cont">
