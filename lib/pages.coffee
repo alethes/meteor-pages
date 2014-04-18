@@ -54,7 +54,7 @@
         continue  unless i?
         i.stop()
   constructor: (collection, settings) ->
-    unless @ instance of Meteor.Pagination
+    unless @ instanceof Meteor.Pagination
       throw "Please use the `new` constructor style " + (new Error).stack.split("\n")[2].trim()
     @setCollection collection
     @setDefaults()
