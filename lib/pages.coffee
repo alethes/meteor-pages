@@ -4,8 +4,9 @@
     divWrapper: [true, false] #If defined, should be a name of the wrapper's CSS classname
     filters: [Object, {}]
     itemTemplate: [String, "_pagesItemDefault"]
-    navShowFirst: [Boolean, true]
-    navShowLast: [Boolean, true]
+    navShowEdges: [Boolean, false] #If true, overrides navShowFirst and navShowLast
+    navShowFirst: [Boolean, true] #If true, overrides navShowEdges
+    navShowLast: [Boolean, true] #If true, overrides navShowEdges
     resetOnReload: [Boolean, false]
     paginationMargin: [Number, 3]
     perPage: [Number, 10]
@@ -204,9 +205,9 @@
             template: t
             onBeforeAction: ->
               self.onNavClick parseInt @params.n
-      if Meteor.isServer and @fastRender
-        FastRender.route "#{@route}:n", (params) ->
-          Meteor.subscribe @name, page
+        if Meteor.isServer and @fastRender
+          FastRender.route "#{@route}:n", (params) ->
+            Meteor.subscribe @name, page
           
   setPerPage: ->
     @perPage = if @pageSizeLimit < @perPage then @pageSizeLimit else @perPage
@@ -307,13 +308,13 @@
     from = 1 if from < 1
     to = total if to > total
     n = []
-    if @navShowFirst
+    if @navShowFirst or @navShowEdges
       n.push @paginationNavItem "«", 1, page == 1
     n.push @paginationNavItem "<", page - 1, page == 1
     for p in [from .. to]
       n.push @paginationNavItem p, p, page > total, p is page
     n.push @paginationNavItem ">", page + 1, page >= total
-    if @navShowLast
+    if @navShowLast or @navShowEdges
       n.push @paginationNavItem "»", total, page >= total
     for i, k in n
       n[k]['_p'] = @
