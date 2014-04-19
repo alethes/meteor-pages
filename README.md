@@ -126,13 +126,9 @@ Unavailable to the client:
 Examples
 --------
 
-THE EXAMPLES FOR v1.0.0+ ARE TEMPORARILY UNAVAILABLE
+Currently, the following examples are available:
 
-Currently, there are three examples:
-
-* most basic usage
-* *iron-router* integrations
-* using multiple collections
+* basic - the most straightforward way of using the package. The default item template simply lists each item's attributes.
 
 If you experience any problems, make sure all the dependencies are installed (using Meteorite). Just run `mrt install` and Meteorite will install the dependencies. CoffeeScript is also required, so run `meteor add coffeescript`.
 

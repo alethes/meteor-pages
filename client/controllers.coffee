@@ -60,4 +60,4 @@ _.extend Template['_pagesTableItem'],
 
 _.extend Template['_pagesItemDefault'],
   properties: ->
-    _.map @, (v, k) -> name: k, value: v
+    _.compact _.map @, (v, k) -> if k[0] isnt "_" then name: k, value: v else null
