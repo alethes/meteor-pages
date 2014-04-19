@@ -8,13 +8,43 @@
   </div>
 </template>
 <template name="_pagesPageCont">
-  {{#if wrapper}}
-    <div class="{{wrapper}}">
-    {{> _pagesPage pagesData}}
+  {{#if divWrapper pagesData}}
+    <div class="{{divWrapper pagesData}}">
+      {{> _pagesPage pagesData}}
     </div>
+  {{else}}{{#if table pagesData}}
+    {{#if tableWrapper pagesData}}
+      <div class="{{tableWrapper pagesData}}">
+        {{> _pagesTable pagesData}}
+      </div>
+    {{else}}
+        {{> _pagesTable pagesData}}
+    {{/if}}
   {{else}}
-    {{> _pagesPage pagesData}}
+  {{> _pagesPage pagesData}}
   {{/if}}
+  {{/if}}
+</template>
+<template name="_pagesTable">
+  <table class="{{class pagesData}}">
+    <thead>
+      <tr>
+        {{#each fields pagesData}}
+          <th>{{value}}</th>
+        {{/each}}
+      </tr>
+    </thead>
+    <tbody>
+      {{> _pagesPage pagesData}}
+    </tbody>
+  </table>
+</template>
+<template name="_pagesTableItem">
+  <tr>
+    {{#each attrs pagesData}}
+      <td>{{value}}</td>
+    {{/each}}
+  </tr>
 </template>
 <template name="_pagesPage">
   {{#if ready}}

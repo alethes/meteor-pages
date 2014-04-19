@@ -22,12 +22,14 @@
   infiniteItemsLimit: 30
   infiniteTrigger: .8
   infiniteRateLimit: 1
-  itemTemplate: "_pagesItemDefault"
   pageSizeLimit: 60
   rateLimit: 1
   homeRoute: "/"
   pageTemplate: "_pagesPageCont"
   navTemplate: "_pagesNavCont"
+  table: false
+  tableItemTemplate: "_pagesTableItem"
+  tableTemplate: "_pagesTable"
   templateName: false #Defaults to collection name
   _ninstances: 0
   _currentPage: 1
@@ -106,14 +108,6 @@
     for k of @availableSettings
       S[k] = @[k]
     @set S, undefined, true, false, cb.bind @
-  defaults: (k, v) ->
-    if v?
-      if typeof k is Object
-        _.map
-      else
-        Pages::[k] = v
-    else
-      Pages::[k]
   setMethods: ->
     nm = {}
     for n, f of @methods
@@ -213,12 +207,15 @@
   setPerPage: ->
     @perPage = if @pageSizeLimit < @perPage then @pageSizeLimit else @perPage
   setTemplates: ->
-    name = if @templateName then @templateName else @name
-    Template[name].pagesData = @
-    Template[name].pagesNav = Template[@navTemplate]
-    Template[name].pagesNav.pagesData = @
-    Template[name].pages = Template[@pageTemplate]
-    Template[name].pages.pagesData = @
+    name = @templateName or @name
+    if @table and @itemTemplate is "_pagesItemDefault"
+      @itemTemplate = @tableItemTemplate
+    for i in [@navTemplate, @pageTemplate, @itemTemplate, @tableTemplate]
+      Template[i].pagesData = @
+    _.extend Template[name],
+      pagesData: @
+      pagesNav: Template[@navTemplate]
+      pages: Template[@pageTemplate]
   countPages: ->  
     Meteor.call @getMethod("CountPages"), ((e, r) ->
       @sess "totalPages", r

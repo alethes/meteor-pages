@@ -17,7 +17,7 @@ Infinite scrolling - [http://pages3.meteor.com/](http://pages3.meteor.com/)
 Features
 --------
 
-+ **Incremental subscriptions**. Downloads only what's needed, not the entire collection at once. Suitable for large datasets.
++ **Incremental subscriptions**. Downloads only what is needed, not the entire collection at once. Suitable for large datasets.
 + **Local cache**. One page - one request. Saves and reuses data on subsequent visits to the same page.
 + **Neighbor prefetching**. After loading the current page, it prefetches the neighbors to ensure seamless transitions.
 + **Request throttling**. Allows you to limit how often the page can be changed.
@@ -27,6 +27,7 @@ Features
 + **Failure resistance**. Accounts for multiple scenarios of failure.
 + **Built-in iron-router integration**. Binds easily to any other router.
 + **Infinite scrolling**. Easily controlled and fully leveraging the package's powerful features.
++ **Automatic generation of paginated tables**.
 + **Trivial customization on the fly**. Items per page, sorting, filters and more adjustable on the fly! Just modify a setting and see the pagination redrawing.
 
 Installation
@@ -60,7 +61,7 @@ Of course, you can use any variable to store the object returned by `new Meteor.
 
 Settings
 --------
-Settings can be passed as a second argument to `Meteor.Pagination()`. Almost all of them can be changed on the client-side, causing immediate redrawing.
+Settings can be passed as a second argument to `Meteor.Pagination()`. Most of them can be changed on the client-side, causing an immediate redrawing.
 
 There are two ways to modify settings:
 
@@ -85,7 +86,7 @@ Pages.set
 ```
 
 Available to the client:
-+ **dataMargin (*Number*, default: 3)** - determines how many neighboring pages on each side should be prefetched for seamless transition after loading the current page.
++ **dataMargin (*Number*, default = 3)** - determines how many neighboring pages on each side should be prefetched for seamless transition after loading the current page.
 + **filters (*Object*, default = {})** - MongoDB find query object, eg. `{name: {$lt: 5}}`
 + **itemTemplate (*String*, default = "paginateItemDefault")** - name of the template to use for items. The default template simply lists all attributes of an item
 + **navShowEdges (*Boolean*, default = false)** - whether to show the links to the edge pages («) in the navigation panel. If true, overrides *navShowFirst* and *navShowLast*.
@@ -93,8 +94,8 @@ Available to the client:
 + **navShowLast (*Boolean*, default = true)** - whether to show the link to the last page (») in the navigation panel. If true, overrides *navShowEdges*.
 + **onReloadPage1 (*Boolean*, default = false)** - determines whether to navigate to page 1 after reloading caused by a change in settings (eg. new sorting order)
 + **paginationMargin (*Number*, default = 3)** - the number of neighboring pages to display on each side of the navigation panel
-+ **perPage (*Number*, default = 10)** - number of items to display per page or to load per request in case of infinite scrolling (can't be larger than server-imposed **pageSizeLimit**)
-+ **requestTimeout (*Number*, default = 3)** - number of seconds to wait for a response until retrying (usable mainly when there're many collections on the page)
++ **perPage (*Number*, default = 10)** - number of items to display per page or to load per request in case of infinite scrolling (cannot be larger than server-imposed **pageSizeLimit**)
++ **requestTimeout (*Number*, default = 3)** - number of seconds to wait for a response until retrying (usable mainly when there are many collections on the page)
 + **route (*String*, default = "/page/")** - route prefix used for subsequent pages (eg. "/page/" gives "/page/1", "/page/2" etc.)
 + **router (*String or Boolean*, default = false)** - Three options:
    - *true* - a router is used but the routes are configured separately by the user
@@ -110,13 +111,17 @@ Unavailable to the client:
 + **homeRoute (*String*, default = "/")** - if "iron-router" is enabled, the specified route sets currentPage to 1
 + **infinite (*Boolean*, default = false)** - infinite scrolling
 + **infiniteItemsLimit (*Number*, default = Infinity)** - the maximum number of items to display at once in infinite scrolling mode. If the number (n) is less then Infinity only the last n items are displayed on the page.
++ **infiniteRateLimit (*Number*, default = 1)** - determines the minimum interval (in seconds) between subsequent page changes in infinite scrolling mode
 + **infiniteTrigger (*Number*, default = 600)** - if infinite scrolling is used, determines how far (for val > 1: in pixels, for 0 > val >= 1: in (1 - percent)) from the bottom of the page should the new data portion be requested
 + **navTemplate (*String*, default = "_pagesNav")** - name of the template used for displaying the pagination navigation
 + **pageTemplate (*String*, default = "_pagesPage")** - name of the template used for displaying a page of items
 + **pageSizeLimit (*Number*, default = 60)** - limits the maximum number of items displayed per page
 + **rateLimit (*Number*, default = 1)** - determines the minimum interval (in seconds) between subsequent page changes
-+ **infiniteRateLimit (*Number*, default = 1)** - determines the minimum interval (in seconds) between subsequent page changes in infinite scrolling mode
-
++ **table (*Object*, default = false)** - generates a table with data from the paginated collection. The following attributes can be provided:
+  + **fields (Array, *required*)** - an array of fields to be displayed in subsequent columns of the table
+  + **class (String, default = "")** - class name of the table
+  + **header (Array, default = *fields*)** - an array of labels to be displayed for subsequent columns in the header row of the table. The *fields* array is used labels if *header* is not specified.
+  + **wrapper (String, default = false) ** - a class name of the optional *<div>* wrapper. The wrapper is not generated if the argument is left out.
 
 Examples
 --------
