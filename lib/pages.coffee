@@ -181,9 +181,10 @@
       catch e
         isNew = false
         @Collection = Pages::collections[@name]
-        @Collection or new Meteor.Error "The <#{collection}> collection 
-        was defined outside of Pages. Pass the collection object
-        instead of collection name to the Meteor.Pagination constructor."
+        console.log @Collection instanceof Meteor.Collection
+        @Collection instanceof Meteor.Collection or throw "The '#{collection}' collection 
+        was created outside of <Meteor.Pagination>. Pass the collection object
+        instead of the collection's name to the <Meteor.Pagination> constructor."
     @setId @Collection._name
     @PaginatedCollection = new Meteor.Collection @id
   setRouter: ->
