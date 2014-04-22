@@ -49,11 +49,8 @@ and HTML:
     {{> collection-name}}
 </body>
 <template name="collection-name">
-    {{> pagesNav pagesData}}  <!--Top navigation--> 
-    <div style="min-height:500px">
-    {{> pages pagesData}}
-    </div>
-    {{> pagesNav pagesData}}  <!--Bottom navigation-->
+    {{> pages}}
+    {{> pagesNav}}  <!--Bottom navigation-->
 </template>
 ```
 
