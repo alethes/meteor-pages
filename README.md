@@ -128,9 +128,9 @@ Examples
 
 Currently, the following examples are available in the */examples* directory:
 
-+ basic - the most straightforward way of using *Pages*. The default item template simply lists each item's attributes.
++ *basic* - the most straightforward way of using *Pages*. The default item template simply lists each item's attributes.
 
-+ table - a data table, constructed automatically based on the list of fields to display
++ *table* - a data table, constructed automatically based on the list of fields to display
 
 If you experience any problems, make sure all the dependencies are installed (using Meteorite). Just run `mrt install` and Meteorite will install the dependencies. CoffeeScript is also required, so run `meteor add coffeescript`.
 
