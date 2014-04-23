@@ -111,7 +111,7 @@ Unavailable to the client:
 + **infinite (*Boolean*, default = false)** - infinite scrolling
 + **infiniteItemsLimit (*Number*, default = Infinity)** - the maximum number of items to display at once in infinite scrolling mode. If the number (n) is less then Infinity only the last n items are displayed on the page.
 + **infiniteRateLimit (*Number*, default = 1)** - determines the minimum interval (in seconds) between subsequent page changes in infinite scrolling mode
-+ **infiniteTrigger (*Number*, default = 600)** - if infinite scrolling is used, determines how far (for val > 1: in pixels, for 0 > val >= 1: in (1 - percent)) from the bottom of the page should the new data portion be requested
++ **infiniteTrigger (*Number*, default = .8)** - if infinite scrolling is used, determines how far (for val > 1: in pixels, for 0 > val >= 1: in (1 - percent)) from the bottom of the page should the new data portion be requested
 + **navTemplate (*String*, default = "_pagesNav")** - name of the template used for displaying the pagination navigation
 + **pageTemplate (*String*, default = "_pagesPage")** - name of the template used for displaying a page of items
 + **pageSizeLimit (*Number*, default = 60)** - limits the maximum number of items displayed per page
