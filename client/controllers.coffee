@@ -19,7 +19,10 @@ _.extend Template['_pagesPage'],
     return true  if @fastRender
     @sess "ready"
   items: ->
-    p = @getPage @sess (if @sess("ready") then "currentPage" else "oldPage")
+    @checkInitPage()
+    n = @sess (if @isReady() then "currentPage" else "oldPage")
+    return []  unless n?
+    p = @getPage n
     return []  unless p?
     for i, k in p
       p[k]['_t'] = @itemTemplate
@@ -29,13 +32,13 @@ _.extend Template['_pagesPage'],
 
 _.extend Template['_pagesNav'],
   show: ->
-    not @infinite and 1 < @sess "totalPages"
+    @fastRender or (not @infinite and 1 < @sess "totalPages")
   link: ->
     self = @_p
     if self.router
       p = @n
       p = 1 if p < 1
-      total = self.sess "totalPages"
+      total = self.sess("totalPages") or self.PreloadedData.findOne(_id: "totalPages").v
       p = total if p > total
       return self.route + p
     "#"

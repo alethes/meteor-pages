@@ -65,11 +65,17 @@
     @[(if Meteor.isServer then "server" else "client") + "Init"]()
     @registerInstance()
     @
+  preloadData: (key, value) ->
+    @PreloadedData.remove _id: key
+    @PreloadedData.insert _id: key, v: value
   serverInit: ->
     @setMethods()
     self = @
+    @preloadData "totalPages", @call "CountPages"
     Meteor.publish @name, (page) ->
       self.publish.call self, page, @
+    Meteor.publish @name + "_data", ->
+      self.PreloadedData.find()
   clientInit: ->
     @requested = []
     @received = []
@@ -117,7 +123,8 @@
   getMethod: (name)->
     @id + name
   call: (method, cb) ->
-    Meteor.call @getMethod(method), cb.bind(@)
+    cb = if typeof cb is "function" then cb.bind(@) else null
+    Meteor.call @getMethod(method), cb
   sess: (k, v) ->
     k = "#{@id}.#{k}"
     if v?
@@ -130,7 +137,7 @@
     else
       cb = @reload.bind @
     if Meteor.isClient and onServer
-      Meteor.call @getMethod("Set"), k, v, cb
+      @call "Set", k, v, cb
     if v?
       changes = @_set k, v, init
     else
@@ -175,17 +182,18 @@
       catch e
         isNew = false
         @Collection = Pages::collections[@name]
-        console.log @Collection instanceof Meteor.Collection
         @Collection instanceof Meteor.Collection or throw "The '#{collection}' collection 
         was created outside of <Meteor.Pagination>. Pass the collection object
         instead of the collection's name to the <Meteor.Pagination> constructor."
     @setId @Collection._name
     @PaginatedCollection = new Meteor.Collection @id
+    @PreloadedData = new Meteor.Collection @id + "_data"
   setRouter: ->
     if @router is "iron-router"
       pr = "#{@route}:n"
       t = @routerTemplate
       self = @
+      init = true
       Router.map ->
         if self.homeRoute
           @route "home",
@@ -200,10 +208,14 @@
             template: t
             onBeforeAction: ->
               self.onNavClick parseInt @params.n
-        if Meteor.isServer and @fastRender
-          FastRender.route "#{@route}:n", (params) ->
-            Meteor.subscribe @name, page
-          
+      if Meteor.isServer and @fastRender
+        self = @
+        FastRender.route "#{@route}:n", (params) ->
+          @subscribe self.name + "_data"
+          @subscribe self.name, parseInt params.n
+        FastRender.route @homeRoute, ->
+          @subscribe self.name + "_data"
+          @subscribe self.name, 1
   setPerPage: ->
     @perPage = if @pageSizeLimit < @perPage then @pageSizeLimit else @perPage
   setTemplates: ->
@@ -217,7 +229,7 @@
       pagesNav: Template[@navTemplate]
       pages: Template[@pageTemplate]
   countPages: ->  
-    Meteor.call @getMethod("CountPages"), ((e, r) ->
+    @call "CountPages", ((e, r) ->
       @sess "totalPages", r
     ).bind(@)
   publish: (page, subscription) ->
@@ -247,7 +259,6 @@
           subscription.removed @id, id
         catch e
       ).bind @, subscription
-    init = false
     n = 0
     c.forEach ((doc, index, cursor) ->
       n++
@@ -255,6 +266,7 @@
       doc["_#{@id}_i"] = index
       subscription.added @id, doc._id, doc
     ).bind @
+    init = false
     subscription.onStop ->
       handle.stop()
     @ready()
@@ -352,7 +364,16 @@
   ready: (p) ->
     if p == true or p is @currentPage() and Session?
       @sess "ready", true
-
+  checkInitPage: ->
+    m = location.pathname.match new RegExp("#{@route}([0-9]+)")
+    if m
+      p = parseInt m[1]
+    else if location.pathname is @homeRoute
+      p = 1
+    else
+      return
+    @sess "oldPage", p
+    @sess "currentPage", p
   getPage: (page) ->
     if Meteor.isClient
       page = @currentPage()  unless page?
