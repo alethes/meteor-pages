@@ -6,11 +6,13 @@ State of the art, out of the box Meteor pagination
 
 As of version 1.0.0, following a major overhaul, the module is fully compatible with Blaze (Meteor 0.8.0+) and features native reactivity support.
 
-Live demos (using older version, will be updated soon): 
+Live demos: 
 
-Basic - [http://pages.meteor.com/](http://pages.meteor.com/)
+Basic usage - [http://pages.meteor.com/](http://pages.meteor.com/)
 
-Multiple collections - [http://pages2.meteor.com/](http://pages2.meteor.com/)
+Table (using *fast-render*) - [http://pages-table.meteor.com](http://pages-table.meteor.com/)
+
+Reactive, multiple collections - [http://pages-multi.meteor.com/](http://pages2.meteor.com/)
 
 Infinite scrolling - [http://pages3.meteor.com/](http://pages3.meteor.com/)
 
@@ -109,23 +111,26 @@ Unavailable to the client:
 + **infinite (*Boolean*, default = false)** - infinite scrolling
 + **infiniteItemsLimit (*Number*, default = Infinity)** - the maximum number of items to display at once in infinite scrolling mode. If the number (n) is less then Infinity only the last n items are displayed on the page.
 + **infiniteRateLimit (*Number*, default = 1)** - determines the minimum interval (in seconds) between subsequent page changes in infinite scrolling mode
-+ **infiniteTrigger (*Number*, default = 600)** - if infinite scrolling is used, determines how far (for val > 1: in pixels, for 0 > val >= 1: in (1 - percent)) from the bottom of the page should the new data portion be requested
++ **infiniteTrigger (*Number*, default = .8)** - if infinite scrolling is used, determines how far (for val > 1: in pixels, for 0 > val >= 1: in (1 - percent)) from the bottom of the page should the new data portion be requested
 + **navTemplate (*String*, default = "_pagesNav")** - name of the template used for displaying the pagination navigation
 + **pageTemplate (*String*, default = "_pagesPage")** - name of the template used for displaying a page of items
 + **pageSizeLimit (*Number*, default = 60)** - limits the maximum number of items displayed per page
 + **rateLimit (*Number*, default = 1)** - determines the minimum interval (in seconds) between subsequent page changes
 + **table (*Object*, default = false)** - generates a table with data from the paginated collection. The following attributes can be provided:
-  + **fields (Array, *required*)** - an array of fields to be displayed in subsequent columns of the table
-  + **class (String, default = "")** - class name of the table
-  + **header (Array, default = *fields*)** - an array of labels to be displayed for subsequent columns in the header row of the table. The *fields* array is used labels if *header* is not specified.
-  + **wrapper (String, default = false) ** - a class name of the optional *<div>* wrapper. The wrapper is not generated if the argument is left out.
+  + **fields (*Array*, required)** - an array of fields to be displayed in subsequent columns of the table
+  + **class (*String*, default = "")** - class name of the table
+  + **header (*Array*, default = *fields*)** - an array of labels to be displayed for subsequent columns in the header row of the table. The *fields* array is used labels if *header* is not specified.
+  + **wrapper (*String*, default = false)** - a class name of the optional *\<div\>* wrapper. The wrapper is not generated if the argument is left out.
+
 
 Examples
 --------
 
-Currently, the following examples are available:
+Currently, the following examples are available in the */examples* directory:
 
-* basic - the most straightforward way of using the package. The default item template simply lists each item's attributes.
++ *basic* - the most straightforward way of using *Pages*. The default item template simply lists each item's attributes.
+
++ *table* - a data table, constructed automatically based on the list of fields to display
 
 If you experience any problems, make sure all the dependencies are installed (using Meteorite). Just run `mrt install` and Meteorite will install the dependencies. CoffeeScript is also required, so run `meteor add coffeescript`.
 

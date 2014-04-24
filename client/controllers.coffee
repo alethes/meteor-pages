@@ -38,12 +38,13 @@ _.extend Template['_pagesNav'],
     if self.router
       p = @n
       p = 1 if p < 1
-      total = self.sess("totalPages") or self.PreloadedData.findOne(_id: "totalPages").v
+      unless self.sess("totalPages")?
+        self.sess "totalPages", self.PreloadedData.findOne(_id: "totalPages").v
+      total = self.sess("totalPages")
       p = total if p > total
       return self.route + p
     "#"
   paginationNeighbors: ->
-    @sess "currentPage"
     @paginationNeighbors()
   events:
     "click a": (e) ->
