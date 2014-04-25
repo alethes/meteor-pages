@@ -19,7 +19,7 @@ _.extend Template['_pagesPage'],
     return true  if @fastRender
     @sess "ready"
   items: ->
-    @checkInitPage()
+    @checkInitPage()  if @init
     n = @sess (if @isReady() then "currentPage" else "oldPage")
     return []  unless n?
     p = @getPage n

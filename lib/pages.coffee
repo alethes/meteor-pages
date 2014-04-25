@@ -34,6 +34,7 @@
   _ninstances: 0
   _currentPage: 1
   collections: {}
+  init: true
   instances: {}
   subscriptions: []
   currentSubscription: null
@@ -345,7 +346,9 @@
         l = oh * t
       else
         return
+      console.log l, window.innerHeight + window.scrollY
       if (window.innerHeight + window.scrollY) >= l
+        console.log @lastPage, @sess "totalPages"
         if @lastPage < @sess "totalPages"
           @sess("currentPage", @lastPage + 1)
     , @infiniteRateLimit * 1000
@@ -365,6 +368,7 @@
     if p == true or p is @currentPage() and Session?
       @sess "ready", true
   checkInitPage: ->
+    @init = false
     m = location.pathname.match new RegExp("#{@route}([0-9]+)")
     if m
       p = parseInt m[1]
