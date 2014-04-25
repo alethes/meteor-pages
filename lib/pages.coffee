@@ -19,7 +19,7 @@
   #The following settings are unavailable to the client after initialization
   fastRender: false
   infinite: false
-  infiniteItemsLimit: 30
+  infiniteItemsLimit: Infinity
   infiniteTrigger: .8
   infiniteRateLimit: 1
   pageSizeLimit: 60
@@ -346,9 +346,7 @@
         l = oh * t
       else
         return
-      console.log l, window.innerHeight + window.scrollY
       if (window.innerHeight + window.scrollY) >= l
-        console.log @lastPage, @sess "totalPages"
         if @lastPage < @sess "totalPages"
           @sess("currentPage", @lastPage + 1)
     , @infiniteRateLimit * 1000
