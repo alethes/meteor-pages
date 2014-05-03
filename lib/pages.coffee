@@ -14,6 +14,7 @@
     route: [String, "/page/"]
     router: [true, false] #Can be any type. Use only in comparisons. Expects String or Boolean
     routerTemplate: [String, "pages"]
+    routerLayout: [String, "layout"]
     sort: [Object, {}]
     fields: [Object, {}]
   #The following settings are unavailable to the client after initialization
@@ -193,6 +194,7 @@
     if @router is "iron-router"
       pr = "#{@route}:n"
       t = @routerTemplate
+      l = @routerLayout ? undefined
       self = @
       init = true
       Router.map ->
@@ -200,6 +202,7 @@
           @route "home",
             path: self.homeRoute
             template: t
+            layoutTemplate: l
             onBeforeAction: ->
               self.sess "oldPage", 1
               self.sess "currentPage", 1
@@ -207,6 +210,7 @@
           @route "page",
             path: pr
             template: t
+            layoutTemplate: l
             onBeforeAction: ->
               self.onNavClick parseInt @params.n
       if Meteor.isServer and @fastRender
@@ -428,3 +432,4 @@
     @checkQueue()
 
 Meteor.Pagination = Pages
+
