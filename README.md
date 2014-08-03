@@ -60,7 +60,7 @@ Of course, you can use any variable to store the object returned by `new Meteor.
 
 Settings
 --------
-Settings can be passed as a second argument to `Meteor.Pagination()`. Most of them can be changed on the client-side, causing an immediate redrawing.
+Settings can be passed as a second argument to `Meteor.Pagination()`. Most of them can be changed on the client-side, causing an immediate redraw.
 
 There are two ways to modify settings:
 
