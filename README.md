@@ -101,6 +101,7 @@ Available to the client:
    - *false* - no router used
    - *"iron-router"* - *iron-router* is used and the routes are automatically set up by *Pages*
 + **routerTemplate (*String*, default = "pages")** - a template used by *iron-router* to generate paging 
++ **routerLayout (*String*, default = "layout")** - a layout used by *iron-router* to generate paging 
 + **sort (*Object*, default = {})** - MongoDB sort determining object, eg. {name: 1}
 + **templateName (*String*, default = "")** - A name of the template to use. Defaults to the collection's name.
 
