@@ -1,8 +1,11 @@
 Package.describe({
-  summary: "State of the art, out of the box Meteor pagination"
+  summary: "State of the art, out of the box Meteor pagination",
+  version: "v1.0.22",
+  git: "https://github.com/alethes/meteor-pages"
 });
 
 Package.on_use(function(api){
+    api.versionsFrom("METEOR@0.9.0")
     api.use([
         "deps",
         "underscore",
@@ -36,6 +39,7 @@ Package.on_use(function(api){
 });
 
 Package.on_test(function(api){
+    api.versionsFrom("METEOR@0.9.0")
     api.use([
         "deps",
         "underscore",

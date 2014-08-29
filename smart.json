@@ -1,9 +1,0 @@
-{
-  "name": "pages",
-  "description": "State of the art, out of the box Meteor pagination",
-  "homepage": "https://github.com/alethes/meteor-pages.git",
-  "author": "Alethes (http://cloudama.com)",
-  "version": "1.0.21",
-  "git": "https://github.com/alethes/meteor-pages.git",
-  "packages": {}
-}
