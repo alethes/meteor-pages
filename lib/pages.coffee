@@ -139,7 +139,7 @@
     else
       cb = @reload.bind @
     if Meteor.isClient and onServer
-      @call "Set", k, v, cb
+      Meteor.call @getMethod("Set"), k, v, cb
     if v?
       changes = @_set k, v, init
     else
