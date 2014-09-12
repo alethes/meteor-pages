@@ -1,0 +1,78 @@
+<template name="pages">
+</template>
+<template name="pagesNav">
+</template>
+<template name="_pagesLoading">
+  <div class="pagesLoadingDefaultCont">
+    <div class="pagesLoadingDefault"><img src="/packages/alethes:pages/public/loader.gif"/></div>
+  </div>
+</template>
+<template name="_pagesPageCont">
+  {{#if divWrapper pagesData}}
+    <div class="{{divWrapper pagesData}}">
+      {{> _pagesPage pagesData}}
+    </div>
+  {{else}}{{#if table pagesData}}
+    {{#if tableWrapper pagesData}}
+      <div class="{{tableWrapper pagesData}}">
+        {{> _pagesTable pagesData}}
+      </div>
+    {{else}}
+        {{> _pagesTable pagesData}}
+    {{/if}}
+  {{else}}
+  {{> _pagesPage pagesData}}
+  {{/if}}
+  {{/if}}
+</template>
+<template name="_pagesTable">
+  <table class="{{class pagesData}}">
+    <thead>
+      <tr>
+        {{#each header pagesData}}
+          <th>{{value}}</th>
+        {{/each}}
+      </tr>
+    </thead>
+    <tbody>
+      {{> _pagesPage pagesData}}
+    </tbody>
+  </table>
+</template>
+<template name="_pagesTableItem">
+  <tr>
+    {{#each attrs pagesData}}
+      <td>{{value}}</td>
+    {{/each}}
+  </tr>
+</template>
+<template name="_pagesPage">
+  {{#if ready}}
+  {{else}}
+    {{> _pagesLoading}}
+  {{/if}}
+  {{#each items}}
+    {{> item}}
+  {{/each}}
+</template>
+<template name="_pagesNavCont">
+  {{> _pagesNav pagesData}}
+</template>
+<template name="_pagesNav">
+  {{#if show}}
+    <div style="text-align:center" data-pages="{{name}}" class="pagination-cont">
+      <ul class="pagination">
+      {{#each paginationNeighbors}}
+        <li class="{{active}} {{disabled}}">
+          <a href="{{link}}">{{p}}</a>
+        </li>
+      {{/each}}
+      </ul>
+    </div>
+  {{/if}}
+</template>
+<template name="_pagesItemDefault">
+  <div class="pagesItemDefault">{{#each properties}}
+    <div><i>{{name}}</i>: {{value}}</div>{{/each}}
+  </div>
+</template>
