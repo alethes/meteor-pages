@@ -19,6 +19,7 @@ _.extend Template['_pagesPage'],
     return true  if @fastRender
     @sess "ready"
   items: ->
+    #console.log @PaginatedCollection.findOne()
     @checkInitPage()  if @init
     n = @sess (if @isReady() then "currentPage" else "oldPage")
     return []  unless n?

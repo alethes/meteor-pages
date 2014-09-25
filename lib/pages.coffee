@@ -41,9 +41,10 @@
   currentSubscription: null
   methods:
     "CountPages": ->
-      Math.ceil @Collection.find(@filters, 
+      n = Math.ceil @Collection.find(@filters, 
         sort: @sort
       ).count() / @perPage
+      n or 1
     "Set": (k, v = undefined) ->
       if v?
         changes = @set k, v, false, true
@@ -53,10 +54,14 @@
           changes += @set _k, _v, false, true
       changes
     "Unsubscribe": ->
-      while @subscriptions.length
-        i = @subscriptions.shift()
-        continue  unless i?
-        i.stop()
+      subs = []
+      for i, k in @subscriptions
+        if i.connection.id is arguments[arguments.length - 1].connection.id
+          i.stop()
+        else
+          subs.push i
+      @subscriptions = subs
+      true
   constructor: (collection, settings) ->
     unless @ instanceof Meteor.Pagination
       throw "Please use the `new` constructor style " + (new Error).stack.split("\n")[2].trim()
@@ -89,22 +94,19 @@
       @reload()  if changes > 0
     ).bind @
   reload: ->
-    @unsubscribe (->
+    @unsubscribe =>
       @requested = []
       @received = []
       @queue = []
-      @call "CountPages", ((e, total) ->
+      @call "CountPages", (e, total) =>
         @sess "totalPages", total
         p = @currentPage()
         p = 1  if (not p?) or @resetOnReload or p > total
         @sess "currentPage", false
         @sess "currentPage", p
-      ).bind @
-    ).bind @
   unsubscribe: (cb) ->
-    @call "Unsubscribe", (->
+    @call "Unsubscribe", =>
       cb()  if cb?
-    ).bind(@)
   setDefaults: ->
     for k, v of @availableSettings
       @[k] = v[1]  if v[1]?
@@ -118,8 +120,17 @@
     @set S, undefined, true, false, cb.bind @
   setMethods: ->
     nm = {}
+    self = @
     for n, f of @methods
-      nm[@id + n] = f.bind @
+      nm[@id + n] = ((f) ->
+        ->
+          arg = []
+          for k, v of arguments
+            arg[k] = v
+          arg.push @
+          r = f.apply self, arg
+          r
+      )(f)
     @methods = nm
     Meteor.methods @methods
   getMethod: (name)->
@@ -248,19 +259,52 @@
       skip: skip
       limit: @perPage
     self = @
-    handle = @Collection.find().observeChanges
-      changed: ((subscription, id, fields) ->
+    handle = c.observe
+      addedAt: ((subscription, doc, at) ->
         try
-          subscription.changed @id, id, fields
+          doc["_#{@id}_p"] = page
+          doc["_#{@id}_i"] = at
+          id = doc._id
+          delete doc._id
+          unless init
+            #Add to @PaginatedCollection
+            subscription.added(@id, id, doc)
+            (@Collection.find @filters,
+              sort: @sort
+              fields: @fields
+              skip: skip
+              limit: @perPage
+            ).forEach (o, i) =>
+              if i >= at
+                subscription.changed(@id, o._id, _.object([["_#{@id}_i", i + 1]]))
         catch e
       ).bind @, subscription
-      added: ((subscription, id, fields) ->
+    handle2 = c.observeChanges
+      movedBefore: ((subscription, id, before) ->
+        ref = false
+        (@Collection.find @filters,
+          sort: @sort
+          fields: @fields
+          skip: skip
+          limit: @perPage
+        ).forEach (o, i) =>
+          if !ref and o._id is before
+            ref = true
+            at = i
+          if ref
+            subscription.changed(@id, o._id, _.object([["_#{@id}_i", i + 1]]))
+          subscription.changed(@id, id, _.object([["_#{@id}_i", i]]))
+        #Change in @PaginatedCollection
+      ).bind @, subscription
+      changed: ((subscription, id, fields) ->
         try
-          subscription.added @id, id, fields  unless init
+          #Change in @PaginatedCollection
+          subscription.changed @id, id, fields
         catch e
       ).bind @, subscription
       removed: ((subscription, id) ->
         try
+          #Remove from @PaginatedCollection
           subscription.removed @id, id
         catch e
       ).bind @, subscription
@@ -269,11 +313,13 @@
       n++
       doc["_#{@id}_p"] = page
       doc["_#{@id}_i"] = index
+      #Initial add to @PaginatedCollection
       subscription.added @id, doc._id, doc
     ).bind @
     init = false
     subscription.onStop ->
       handle.stop()
+      handle2.stop()
     @ready()
     @subscriptions.push subscription
     c
@@ -407,9 +453,16 @@
             ["_#{@id}_p", page]
           ]),
           fields: @fields
-          #sort: @sort
-        ).fetch()
-      c
+          sort: _.object([
+            ["_#{@id}_i", 1]
+          ])
+        )
+        c.observeChanges
+          added: =>
+            @countPages()
+          removed: =>
+            @countPages()
+      c.fetch()
   requestPage: (page) ->
     return  if page in @requested
     @clearQueue()  if page is @currentPage()
