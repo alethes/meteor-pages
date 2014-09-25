@@ -31,6 +31,7 @@ Features
 + **Infinite scrolling**. Easily controlled and fully leveraging the package's powerful features.
 + **Automatic generation of paginated tables**.
 + **Trivial customization on the fly**. Items per page, sorting, filters and more adjustable on the fly! Just modify a setting and see the pagination redrawing.
++ **Live sort**. All changes in the data are immediately reflected. Items move around within and across pages according to arbitrary sorting rules.
 
 Installation
 ------------
@@ -140,7 +141,6 @@ If you experience any problems, make sure all the dependencies are installed (us
 
 Todos
 -----
-+ Implementing performance optimized live sort for modified/incoming data
 + Tests
 
 Support
