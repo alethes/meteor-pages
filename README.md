@@ -34,6 +34,9 @@ Features
 
 Installation
 ------------
+Meteor 0.9+:
+`meteor add alethes:pages`
+
 Meteorite:
 `mrt add pages`
 
