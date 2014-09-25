@@ -1,12 +1,12 @@
 Package.describe({
-  "name": "alethes:pages"
+  "name": "alethes:pages",
   "summary": "State of the art, out of the box Meteor pagination",
   "version": "1.1.3",
   "git": "https://github.com/alethes/meteor-pages"
 });
 
 Package.on_use(function(api){
-    api.versionsFrom("METEOR@0.9.0")
+    api.versionsFrom("METEOR@0.9.2.2")
     api.use([
         "deps",
         "underscore",
