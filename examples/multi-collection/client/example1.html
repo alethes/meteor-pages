@@ -1,0 +1,72 @@
+<template name="example1">
+  <h2>Example 1: Same Page</h2>
+  <div>
+    <a href="{{pathFor "home"}}">Back to multi-collection examples</a>
+  </div>
+  <div class="row">
+    <div class="col-2">
+      <h4>Data Set 1</h4>
+      {{> exOneDataSetOne}}
+    </div>
+    <div class="col-2">
+      <h4>Data Set 2</h4>
+      {{> exOneDataSetTwo}}
+    </div>
+  </div>
+</template>
+
+<template name="exOneDataSetOne">
+    {{> pages}}
+    {{> pagesNav}}
+</template>
+
+<template name="exOneDataSetTwo">
+    {{> pages}}
+    {{> pagesNav}}
+</template>
+
+<template name="exOneDataSetOnePageCont">
+  {{#if divWrapper pagesData}}
+    <div class="{{divWrapper pagesData}}">
+      {{> _pagesPage pagesData}}
+    </div>
+  {{else}}{{#if table pagesData}}
+    {{#if tableWrapper pagesData}}
+      <div class="{{tableWrapper pagesData}}">
+        {{> _pagesTable pagesData}}
+      </div>
+    {{else}}
+        {{> _pagesTable pagesData}}
+    {{/if}}
+  {{else}}
+  {{> _pagesPage pagesData}}
+  {{/if}}
+  {{/if}}
+</template>
+
+<template name="exOneDataSetOneNavCont">
+  {{> _pagesNav pagesData}}
+</template>
+
+<template name="exOneDataSetTwoPageCont">
+  {{#if divWrapper pagesData}}
+    <div class="{{divWrapper pagesData}}">
+      {{> _pagesPage pagesData}}
+    </div>
+  {{else}}{{#if table pagesData}}
+    {{#if tableWrapper pagesData}}
+      <div class="{{tableWrapper pagesData}}">
+        {{> _pagesTable pagesData}}
+      </div>
+    {{else}}
+        {{> _pagesTable pagesData}}
+    {{/if}}
+  {{else}}
+  {{> _pagesPage pagesData}}
+  {{/if}}
+  {{/if}}
+</template>
+
+<template name="exOneDataSetTwoNavCont">
+  {{> _pagesNav pagesData}}
+</template>
