@@ -174,7 +174,7 @@
       name = @templateName
     if name of Pages::instances
       n = name.match /[0-9]+$/
-      if n? 
+      if n?
         name = name[0 .. n[0].length] + parseInt(n) + 1
       else
         name = name + "2"
@@ -417,13 +417,10 @@
       @sess "ready", true
   checkInitPage: ->
     @init = false
-    m = location.pathname.match new RegExp("#{@route}([0-9]+)")
-    if m
+    if location.pathname.match new RegExp("#{@route}([0-9]+)")
       p = parseInt m[1]
-    else if location.pathname is @homeRoute
-      p = 1
     else
-      return
+      p = 1
     @sess "oldPage", p
     @sess "currentPage", p
   getPage: (page) ->
@@ -464,7 +461,7 @@
             @countPages()
       c.fetch()
   requestPage: (page) ->
-    return  if page in @requested
+    return  if !page or page in @requested
     @clearQueue()  if page is @currentPage()
     @queue.push page
     @logRequest page
