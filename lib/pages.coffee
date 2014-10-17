@@ -443,7 +443,7 @@
           sort: @sort
           skip: if @infiniteItemsLimit isnt Infinity and n > @infiniteItemsLimit then n - @infiniteItemsLimit else 0
           limit: @infiniteItemsLimit
-        ).fetch()
+        )
       else #if page in @received
         c = @PaginatedCollection.find(
           _.object([

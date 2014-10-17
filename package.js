@@ -1,7 +1,7 @@
 Package.describe({
   "name": "pages",
   "summary": "State of the art, out of the box Meteor pagination",
-  "version": "1.1.3",
+  "version": "1.1.4",
   "git": "https://github.com/alethes/meteor-pages"
 });
 
