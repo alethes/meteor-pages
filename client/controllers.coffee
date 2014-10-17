@@ -1,4 +1,4 @@
-_.extend Template['_pagesPageCont'],
+Template._pagesPageCont.helpers
   divWrapper: (self) ->
     self.divWrapper
   table: (self) ->
@@ -6,7 +6,7 @@ _.extend Template['_pagesPageCont'],
   tableWrapper: (self) ->
     self.table.wrapper
 
-_.extend Template['_pagesTable'],
+Template._pagesTable.helpers
   class: (self) ->
     self.table.class or ""
   fields: (self) ->
@@ -14,7 +14,7 @@ _.extend Template['_pagesTable'],
   header: (self) ->
     _.map (self.table.header or self.table.fields), (v) -> value: v
 
-_.extend Template['_pagesPage'],
+Template._pagesPage.helpers
   ready: ->
     return true  if @fastRender
     @sess "ready"
@@ -31,7 +31,7 @@ _.extend Template['_pagesPage'],
   item: ->
     Template[@_t]
 
-_.extend Template['_pagesNav'],
+Template._pagesNav.helpers
   show: ->
     @fastRender or (not @infinite and 1 < @sess "totalPages")
   link: ->
@@ -47,8 +47,9 @@ _.extend Template['_pagesNav'],
     "#"
   paginationNeighbors: ->
     @paginationNeighbors()
-  events:
-    "click a": (e) ->
+
+Template._pagesNav.events
+  "click a": (e) ->
       n = e.target.parentNode.parentNode.parentNode.getAttribute 'data-pages'
       self = Meteor.Pagination::instances[n]
       (_.throttle (e, self, n) ->
@@ -57,12 +58,12 @@ _.extend Template['_pagesNav'],
           self.onNavClick.call self, n
       , self.rateLimit * 1000)(e, self, @n)
 
-_.extend Template['_pagesTableItem'],
+Template._pagesTableItem.helpers
   attrs: (self) ->
     _.map self.table.fields, ((n) ->
       value: if @[n]? then @[n] else ""
     ).bind @
 
-_.extend Template['_pagesItemDefault'],
+Template._pagesItemDefault.helpers
   properties: ->
     _.compact _.map @, (v, k) -> if k[0] isnt "_" then name: k, value: v else null
