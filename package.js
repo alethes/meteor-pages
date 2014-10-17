@@ -1,37 +1,37 @@
 Package.describe({
   "name": "pages",
   "summary": "State of the art, out of the box Meteor pagination",
-  "version": "1.1.4",
+  "version": "1.2.0",
   "git": "https://github.com/alethes/meteor-pages"
 });
 
-Package.on_use(function(api){
-    api.versionsFrom("METEOR@0.9.2.2")
+Package.onUse(function(api){
+    api.versionsFrom("METEOR@0.9.4")
     api.use([
-        "deps",
+        "tracker",
         "underscore",
         "coffeescript"
     ]);
 
     api.use([
         "templating",
-        "handlebars",
-        "ui",
+        "spacebars",
+        "blaze",
         "session"
     ], "client");
 
     api.use([
-        "deps",
+        "tracker",
         "underscore",
         "coffeescript",
         "check"
     ], "server");
 
-    api.add_files([
+    api.addFiles([
         "lib/pages.coffee"
     ]);
 
-    api.add_files([
+    api.addFiles([
         "client/templates.html",
         "client/controllers.coffee",
         "client/main.css",
@@ -39,34 +39,34 @@ Package.on_use(function(api){
     ], "client");
 });
 
-Package.on_test(function(api){
-    api.versionsFrom("METEOR@0.9.0")
+Package.onTest(function(api){
+    api.versionsFrom("METEOR@0.9.4")
     api.use([
-        "deps",
+        "tracker",
         "underscore",
         "coffeescript"
     ]);
 
     api.use([
         "templating",
-        "handlebars",
-        "ui",
+        "spacebars",
+        "blaze",
         "session"
     ], "client");
 
     api.use([
-        "deps",
+        "tracker",
         "underscore",
         "coffeescript",
         "check"
     ], "server");
 
-    api.add_files([
+    api.addFiles([
         "lib/pages.coffee",
         "test/tests.coffee"
     ]);
 
-    api.add_files([
+    api.addFiles([
         "client/templates.html",
         "client/controllers.coffee",
         "client/main.css",

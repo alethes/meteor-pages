@@ -190,17 +190,17 @@
     else
       isNew = true
       try
-        @Collection = new Meteor.Collection collection
+        @Collection = new Mongo.Collection collection
         Pages::collections[@name] = @Collection
       catch e
         isNew = false
         @Collection = Pages::collections[@name]
-        @Collection instanceof Meteor.Collection or throw "The '#{collection}' collection 
+        @Collection instanceof Mongo.Collection or throw "The '#{collection}' collection 
         was created outside of <Meteor.Pagination>. Pass the collection object
         instead of the collection's name to the <Meteor.Pagination> constructor."
     @setId @Collection._name
-    @PaginatedCollection = new Meteor.Collection @id
-    @PreloadedData = new Meteor.Collection @id + "_data"
+    @PaginatedCollection = new Mongo.Collection @id
+    @PreloadedData = new Mongo.Collection @id + "_data"
   setRouter: ->
     if @router is "iron-router"
       pr = "#{@route}:n"
@@ -210,7 +210,7 @@
       init = true
       Router.map ->
         if self.homeRoute
-          @route "home",
+          @route "#{self.name}_home",
             path: self.homeRoute
             template: t
             layoutTemplate: l
@@ -218,7 +218,7 @@
               self.sess "oldPage", 1
               self.sess "currentPage", 1
         unless self.infinite
-          @route "page",
+          @route "#{self.name}_page",
             path: pr
             template: t
             layoutTemplate: l
@@ -239,8 +239,8 @@
     if @table and @itemTemplate is "_pagesItemDefault"
       @itemTemplate = @tableItemTemplate
     for i in [@navTemplate, @pageTemplate, @itemTemplate, @tableTemplate]
-      Template[i].pagesData = @
-    _.extend Template[name],
+      Template[i].helpers pagesData: @
+    Template[name].helpers
       pagesData: @
       pagesNav: Template[@navTemplate]
       pages: Template[@pageTemplate]
