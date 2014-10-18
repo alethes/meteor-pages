@@ -4,8 +4,6 @@ Meteor Pages
 State of the art, out of the box Meteor pagination
 --------------------------------------------------
 
-As of version 1.0.0, following a major overhaul, the module is fully compatible with Blaze (Meteor 0.8.0+) and features native reactivity support.
-
 Live demos: 
 
 Basic usage - [http://pages.meteor.com/](http://pages.meteor.com/)
