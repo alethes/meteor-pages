@@ -133,12 +133,19 @@
           r
       )(f)
     @methods = nm
+    console.log @methods
     Meteor.methods @methods
-  getMethod: (name)->
+  getMethodName: (name) ->
     @id + name
-  call: (method, cb) ->
-    cb = if typeof cb is "function" then cb.bind(@) else null
-    Meteor.call @getMethod(method), cb
+  call: (args...) ->
+    check args, Array
+    if args.length < 1
+      throw new Meteor.Error "Method name not provided in a method call."
+    args[0] = @getMethodName args[0]
+    last = args.length - 1
+    if _.isFunction args[last]
+      args[last] = args[last].bind @
+    Meteor.call.apply @, args
   sess: (k, v) ->
     k = "#{@id}.#{k}"
     if v?
@@ -151,7 +158,7 @@
     else
       cb = @reload.bind @
     if Meteor.isClient and onServer
-      Meteor.call @getMethod("Set"), k, v, cb
+      @call "Set", k, v, cb
     if v?
       changes = @_set k, v, init
     else
