@@ -1,58 +1,62 @@
 @__Pages = class Pages
-  availableSettings: #Settings available to the client
-    dataMargin: [Number, 3]
-    divWrapper: [true, false] #If defined, should be a name of the wrapper's CSS classname
-    filters: [Object, {}]
-    itemTemplate: [String, "_pagesItemDefault"]
-    navShowEdges: [Boolean, false] #If true, overrides navShowFirst and navShowLast
-    navShowFirst: [Boolean, true] #If true, overrides navShowEdges
-    navShowLast: [Boolean, true] #If true, overrides navShowEdges
-    resetOnReload: [Boolean, false]
-    paginationMargin: [Number, 3]
-    perPage: [Number, 10]
-    requestTimeout: [Number, 2]
-    route: [String, "/page/"]
-    router: [true, false] #Can be any type. Use only in comparisons. Expects String or Boolean
-    routerTemplate: [String, "pages"]
-    routerLayout: [String, "layout"]
-    sort: [Object, {}]
-    fields: [Object, {}]
-  #The following settings are unavailable to the client after initialization
-  auth: false
-  fastRender: false
-  infinite: false
-  infiniteItemsLimit: Infinity
-  infiniteTrigger: .8
-  infiniteRateLimit: 1
-  pageSizeLimit: 60
-  rateLimit: 1
-  homeRoute: "/"
-  pageTemplate: "_pagesPageCont"
-  navTemplate: "_pagesNavCont"
-  table: false
-  tableItemTemplate: "_pagesTableItem"
-  tableTemplate: "_pagesTable"
-  templateName: false #Defaults to collection name
+  settings:
+    #name: [availableToTheClient, expectedTypes(s), defaultValue, defaultValueAuthorizationFunction?]
+    dataMargin: [true, Number, 3]
+    divWrapper: [true, Match.Optional(String), undefined] #If defined, should be a name of the wrapper's CSS classname
+    fields: [true, Object, {}]
+    filters: [true, Object, {}]
+    itemTemplate: [true, String, "_pagesItemDefault"]
+    navShowEdges: [true, Boolean, false] #If true, overrides navShowFirst and navShowLast
+    navShowFirst: [true, Boolean, true] #If true, overrides navShowEdges
+    navShowLast: [true, Boolean, true] #If true, overrides navShowEdges
+    resetOnReload: [true, Boolean, false]
+    paginationMargin: [true, Number, 3]
+    perPage: [true, Number, 10]
+    #requestTimeout: [true, Number, 2]
+    route: [true, String, "/page/"]
+    router: [true, Match.Optional(String), undefined] #Can be any type. Use only in comparisons. Expects String or Boolean
+    routerTemplate: [true, String, "pages"]
+    routerLayout: [true, String, "layout"]
+    sort: [true, Object, {}]
+    #Unavailable to the client after initialization
+    auth: [false, Match.Optional(Function), undefined]
+    fastRender: [false, Boolean, false]
+    infinite: [false, Boolean, false]
+    infiniteItemsLimit: [false, Number, Infinity]
+    infiniteTrigger: [false, Number, .9]
+    infiniteRateLimit: [false, Number, 1]
+    pageSizeLimit: [false, Number, 60]
+    rateLimit: [false, Number, 1]
+    homeRoute: [false, String, "/"]
+    pageTemplate: [false, String, "_pagesPageCont"]
+    navTemplate: [false, String, "_pagesNavCont"]
+    table: [false, Boolean, false]
+    tableItemTemplate: [false, String, "_pagesTableItem"]
+    tableTemplate: [false, String, "_pagesTable"]
+    templateName: [false, Match.Optional(String), undefined] #Defaults to collection name
   _ninstances: 0
   _currentPage: 1
   collections: {}
   init: true
   instances: {}
   subscriptions: []
-  currentSubscription: null
+  userSettings: {}
   methods:
     "CountPages": ->
       return @nPublishedPages  if @nPublishedPages
-      console.log @nPublishedPages, @realFilters, @perPage
       n = Math.ceil @Collection.find(@realFilters).count() / @perPage
       n or 1
-    "Set": (k, v = undefined) ->
+    "Set": (k, v, subscription) ->
+      check k, String
+      check v, Match.Any
+      check subscription, Match.Where (s) ->
+        s.connection?.id?
       if v?
-        changes = @set k, v, false, true
+        changes = @_set k, v, cid: subscription.connection.id
       else
         changes = 0
         for _k, _v of k
-          changes += @set _k, _v, false, true
+          changes += @set _k, _v, cid: subscription.connection.id
       changes
     "Unsubscribe": ->
       subs = []
@@ -65,14 +69,17 @@
       true
   constructor: (collection, settings) ->
     unless @ instanceof Meteor.Pagination
-      throw "Please use the `new` constructor style " + (new Error).stack.split("\n")[2].trim()
+      @error 4000, "The Meteor.Pagination instance has to be initiated with `new`"
     @setCollection collection
     @setDefaults()
-    @applySettings settings
+    @set settings
     @setRouter()
     @[(if Meteor.isServer then "server" else "client") + "Init"]()
     @registerInstance()
     @
+  error: (code, msg) ->
+    msg = code  if !code?
+    throw new Meteor.Error code, msg
   preloadData: (key, value) ->
     @PreloadedData.remove _id: key
     @PreloadedData.insert _id: key, v: value
@@ -109,16 +116,14 @@
     @call "Unsubscribe", =>
       cb()  if cb?
   setDefaults: ->
-    for k, v of @availableSettings
-      @[k] = v[1]  if v[1]?
-  applySettings: (settings) ->
-    for key, value of settings
-      @set key, value, false, true
+    for k, v of @settings
+      @[k] = v[2]  if v[2]?
   syncSettings: (cb) ->
     S = {}
-    for k of @availableSettings
-      S[k] = @[k]
-    @set S, undefined, true, false, if cb? then cb.bind(@) else null
+    for k, v of @settings
+      if v[0]
+        S[k] = @[k]
+    @set S, if cb? then {cb: cb.bind(@)} else null
   setMethods: ->
     nm = {}
     self = @
@@ -133,14 +138,13 @@
           r
       )(f)
     @methods = nm
-    console.log @methods
     Meteor.methods @methods
   getMethodName: (name) ->
     @id + name
   call: (args...) ->
     check args, Array
     if args.length < 1
-      throw new Meteor.Error "Method name not provided in a method call."
+      @error 4001, "Method name not provided in a method call."
     args[0] = @getMethodName args[0]
     last = args.length - 1
     if _.isFunction args[last]
@@ -152,30 +156,54 @@
       Session.set k, v
     else
       Session.get k
-  set: (k, v = undefined, onServer = true, init = false, cb) ->
-    if cb?
-      cb = cb.bind @
-    else
-      cb = @reload.bind @
-    if Meteor.isClient and onServer
-      @call "Set", k, v, cb
-    if v?
-      changes = @_set k, v, init
-    else
-      changes = 0
-      for _k, _v of k
-        changes += @_set _k, _v, init
-    changes
-  _set: (k, v, init = false) ->
+  get: (setting, connectionId) ->
+    @userSettings[connectionId]?[setting] ? @[setting]
+  set: (k, opts...) ->
+    switch opts.length
+      when 0
+        check k, Object
+        for _k, _v of k
+          @_set _k, _v
+      when 1
+        if _.isObject k
+          if _.isFunction opts[0]
+            opts = cb: opts[1]
+          for _k, _v of k
+            @_set _k, _v, opts
+        else
+          check k, String
+          @_set k, opts[0]
+      when 2
+        if _.isFunction opts[1]
+          opts[1] = cb: opts[1]
+        @_set k, opts[0], opts[1]
+      when 3
+        check opts[1], Object
+        check opts[2], Function
+        opts[1].cb = opts[2]
+        @_set k, opts[1], opts
+  _set: (k, v, opts = {}) ->
+    check k, String
     ch = 0
-    if init or k of @availableSettings
-      if @availableSettings[k]? and @availableSettings[k][0] isnt true
-        check v, @availableSettings[k][0]
-      if JSON.stringify(@[k]) != JSON.stringify(v)
+    if Meteor.isServer or !@[k]? or @settings[k]?[0]
+      if @settings[k]?[1]? and @settings[k]?[1] isnt true
+        check v, @settings[k][1]
+      if !EJSON.equals @[k], v
         ch = 1
-      @[k] = v
+      if Meteor.isClient
+        @call "Set", k, v, (e, r) ->
+          @[k] = v
+          opts.cb? ch
+      else
+        if opts.cid
+          @userSettings[opts.cid] ?= {}
+          @userSettings[opts.cid][k] = v
+        else
+          @[k] = v
+        opts.cb? ch
     else
-      new Meteor.Error 400, "Setting not available."
+      console.log "Modifying #{k} not allowed."
+      #@error 4002, "Setting #{k} not available."
     ch
   setId: (name) ->
     if @templateName
@@ -262,6 +290,10 @@
     @ready()
     return @Collection.find null
   publish: (page, subscription) ->
+    check page, Number
+    check subscription, Match.Where (s) ->
+      s.ready?
+    connectionId = subscription.connection.id
     @setPerPage()
     skip = (page - 1) * @perPage
     skip = 0  if skip < 0
@@ -357,7 +389,7 @@
     @subscriptions.push subscription
     c
   loading: (p) ->
-    if not @fastRender and p is @currentPage() and Session?
+    if !@fastRender and p is @currentPage() and Session?
       @sess "ready", false
   now: ->
     (new Date()).getTime()

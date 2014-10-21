@@ -99,7 +99,7 @@ Available to the client:
 + **perPage (*Number*, default = 10)** - number of items to display per page or to load per request in case of infinite scrolling (cannot be larger than server-imposed **pageSizeLimit**)
 + **requestTimeout (*Number*, default = 3)** - number of seconds to wait for a response until retrying (usable mainly when there are many collections on the page)
 + **route (*String*, default = "/page/")** - route prefix used for subsequent pages (eg. "/page/" gives "/page/1", "/page/2" etc.)
-+ **router (*String or Boolean*, default = false)** - Three options:
++ **router (*String*, default = **undefined**)** - Three options:
    - *true* - a router is used but the routes are configured separately by the user
    - *false* - no router used
    - *"iron-router"* - *iron-router* is used and the routes are automatically set up by *Pages*
@@ -122,7 +122,7 @@ Unavailable to the client:
    - a *Mongo.Collection.Cursor* (or some other cursor with a compatible interface) - publishes the cursor.
    - an *Array of Mongo.Collection.Cursor objects* (or some others cursor with a compatible interface) - publishes the cursors.
    **When publishing a cursor or an array of cursors, you have to make sure to set **realFilters** (filters used in publication; sometimes different from filters visible to the client) or **nPublishedPages** (explicit number of published pages) manually to ensure proper rendering of navigation controls. In most cases, it's recommended to return an array with filters and options (option 4) instead.**
-+ **divWrapper (*String, Boolean*, default = false)** - if provided, the Pagination page is wrapped in a div with the provided class name
++ **divWrapper (*String, Boolean*, default = **undefined**)** - if provided, the Pagination page is wrapped in a div with the provided class name
 + **fastRender (*Boolean*, default = false)** - determines whether *fast-render* package should be used to speed up page loading
 + **homeRoute (*String*, default = "/")** - if "iron-router" is enabled, the specified route sets currentPage to 1
 + **infinite (*Boolean*, default = false)** - infinite scrolling

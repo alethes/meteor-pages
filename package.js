@@ -8,6 +8,7 @@ Package.describe({
 Package.onUse(function(api){
     api.versionsFrom("METEOR@0.9.4")
     api.use([
+        "check",
         "tracker",
         "underscore",
         "coffeescript"
@@ -19,13 +20,6 @@ Package.onUse(function(api){
         "blaze",
         "session"
     ], "client");
-
-    api.use([
-        "tracker",
-        "underscore",
-        "coffeescript",
-        "check"
-    ], "server");
 
     api.addFiles([
         "lib/pages.coffee"
