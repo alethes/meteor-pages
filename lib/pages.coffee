@@ -271,6 +271,7 @@
       fields: @fields
       skip: skip
       limit: @perPage
+    @realFilters = null
     @nPublishedPages = null
     if @auth?
       r = @auth.call @, skip, subscription
@@ -287,7 +288,7 @@
           options = r[1]
       else if _.isFunction r.fetch
         c = r
-    @realFilters = filters
+    @realFilters ?= filters
     c ?= @Collection.find filters, options
     init = true
     self = @
