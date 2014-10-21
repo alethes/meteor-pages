@@ -30,6 +30,7 @@ Features
 + **Built-in iron-router integration**. Binds easily to any other router.
 + **Infinite scrolling**. Easily controlled and fully leveraging the package's powerful features.
 + **Automatic generation of paginated tables**.
++ **Built-in authorization support**. Easily restrict data access according to arbitrary sets of rules.
 + **Trivial customization on the fly**. Items per page, sorting, filters and more adjustable on the fly! Just modify a setting and see the pagination redrawing.
 + **Live sort**. All changes in the data are immediately reflected. Items move around within and across pages according to arbitrary sorting rules.
 
@@ -110,7 +111,19 @@ Available to the client:
 + **templateName (*String*, default = "")** - A name of the template to use. Defaults to the collection's name.
 
 Unavailable to the client:
-+ **divWrapper (*String*, default = false)** - if provided, the Pagination page is wrapped in a div with the provided class name
++ **auth (*Function, Boolean*, default = false)** - authorization function called by the built-in publication method with the following arguments:
+   - *skip* - precalculated number of items to skip based on the number of page being published. Useful when returning a cursor.
+   - *subscription* - the Meteor subscription object (*this* in *Meteor.publish()*). **In authenticated connections, *subscription.userId* holds the currently signed-in user's *_id*. Otherwise, it's *null*.**
+  The authorization function is called in the context of our *Meteor.Pagination* object (ie. it serves as *this*).
+  The page number is not exposed because it shouldn't be necessary and page-dependent authorization rules would render calculation of the total number of pages ineffective. The total page count is needed for displaying navigation controls properly.
+  The authorization function should return one of the following:
+   - *true* - grants unrestricted access to the paginated collection
+   - a ***falsy** value* - denies access to the paginated collection
+   - an *Array* of the form: [*filters*, *options*] - publishes `this.Collection.find(*filters*, *option*)`
+   - a *Number* - publishes only pages with page number not greater than the specified number (1-based numbering is used for pages).
+   - a *Mongo.Collection.Cursor* (or some other cursor with a compatible interface) - publishes the cursor.
+   - an *Array of Mongo.Collection.Cursor objects* (or some others cursor with a compatible interface) - publishes the cursors.
++ **divWrapper (*String, Boolean*, default = false)** - if provided, the Pagination page is wrapped in a div with the provided class name
 + **fastRender (*Boolean*, default = false)** - determines whether *fast-render* package should be used to speed up page loading
 + **homeRoute (*String*, default = "/")** - if "iron-router" is enabled, the specified route sets currentPage to 1
 + **infinite (*Boolean*, default = false)** - infinite scrolling
@@ -121,11 +134,11 @@ Unavailable to the client:
 + **pageTemplate (*String*, default = "_pagesPage")** - name of the template used for displaying a page of items
 + **pageSizeLimit (*Number*, default = 60)** - limits the maximum number of items displayed per page
 + **rateLimit (*Number*, default = 1)** - determines the minimum interval (in seconds) between subsequent page changes
-+ **table (*Object*, default = false)** - generates a table with data from the paginated collection. The following attributes can be provided:
++ **table (*Object, Boolean*, default = false)** - generates a table with data from the paginated collection. The following attributes can be provided:
   + **fields (*Array*, required)** - an array of fields to be displayed in subsequent columns of the table
   + **class (*String*, default = "")** - class name of the table
   + **header (*Array*, default = *fields*)** - an array of labels to be displayed for subsequent columns in the header row of the table. The *fields* array is used labels if *header* is not specified.
-  + **wrapper (*String*, default = false)** - a class name of the optional *\<div\>* wrapper. The wrapper is not generated if the argument is left out.
+  + **wrapper (*String, Boolean*, default = false)** - a class name of the optional *\<div\>* wrapper. The wrapper is not generated if the argument is left out.
 
 
 Examples
@@ -135,9 +148,9 @@ Currently, the following examples are available in the */examples* directory:
 
 + *basic* - the most straightforward way of using *Pages*. The default item template simply lists each item's attributes.
 
-+ *table* - a data table, constructed automatically based on the list of fields to display
++ *multi-collection* - multiple collection on a single page
 
-If you experience any problems, make sure all the dependencies are installed (using Meteorite). Just run `mrt install` and Meteorite will install the dependencies. CoffeeScript is also required, so run `meteor add coffeescript`.
++ *table* - a data table, constructed automatically based on the list of fields to display
 
 Todos
 -----

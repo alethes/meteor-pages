@@ -1,5 +1,5 @@
 @__Pages = class Pages
-  availableSettings:
+  availableSettings: #Settings available to the client
     dataMargin: [Number, 3]
     divWrapper: [true, false] #If defined, should be a name of the wrapper's CSS classname
     filters: [Object, {}]
@@ -18,6 +18,7 @@
     sort: [Object, {}]
     fields: [Object, {}]
   #The following settings are unavailable to the client after initialization
+  auth: false
   fastRender: false
   infinite: false
   infiniteItemsLimit: Infinity
@@ -41,9 +42,9 @@
   currentSubscription: null
   methods:
     "CountPages": ->
-      n = Math.ceil @Collection.find(@filters, 
-        sort: @sort
-      ).count() / @perPage
+      return @nPublishedPages  if @nPublishedPages
+      console.log @nPublishedPages, @realFilters, @perPage
+      n = Math.ceil @Collection.find(@realFilters).count() / @perPage
       n or 1
     "Set": (k, v = undefined) ->
       if v?
@@ -117,7 +118,7 @@
     S = {}
     for k of @availableSettings
       S[k] = @[k]
-    @set S, undefined, true, false, cb.bind @
+    @set S, undefined, true, false, if cb? then cb.bind(@) else null
   setMethods: ->
     nm = {}
     self = @
@@ -244,20 +245,44 @@
       pagesData: @
       pagesNav: Template[@navTemplate]
       pages: Template[@pageTemplate]
-  countPages: ->  
-    @call "CountPages", ((e, r) ->
-      @sess "totalPages", r
-    ).bind(@)
+  countPages: _.throttle ->
+      @call "CountPages", ((e, r) ->
+        @sess "totalPages", r
+      ).bind(@)
+    , 100
+  publishNone: ->
+    @realFilters = false
+    @ready()
+    return @Collection.find null
   publish: (page, subscription) ->
     @setPerPage()
     skip = (page - 1) * @perPage
     skip = 0  if skip < 0
-    init = true
-    c = @Collection.find @filters,
+    filters = @filters
+    options = 
       sort: @sort
       fields: @fields
       skip: skip
       limit: @perPage
+    @nPublishedPages = null
+    if @auth?
+      r = @auth.call @, skip, subscription
+      if !r
+        return @publishNone()
+      else if _.isNumber r
+        @nPublishedPages = r
+        return @publishNone()  if page > r
+      else if _.isArray(r) and r.length is 2
+        if _.isFunction r[0].fetch
+          c = r
+        else
+          filters = r[0]
+          options = r[1]
+      else if _.isFunction r.fetch
+        c = r
+    @realFilters = filters
+    c ?= @Collection.find filters, options
+    init = true
     self = @
     handle = c.observe
       addedAt: ((subscription, doc, at) ->
@@ -479,6 +504,7 @@
     @ready page
     if @infinite
       @lastPage = page
+    @countPages()
     @checkQueue()
 
 Meteor.Pagination = Pages
