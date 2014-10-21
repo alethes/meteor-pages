@@ -42,21 +42,22 @@
   subscriptions: []
   userSettings: {}
   methods:
-    "CountPages": ->
-      return @nPublishedPages  if @nPublishedPages
-      n = Math.ceil @Collection.find(@realFilters).count() / @perPage
+    "CountPages": (sub) ->
+      n = sub.get "nPublishedPages"
+      return n  if n
+      n = Math.ceil @Collection.find(sub.get("realFilters") or {}).count() / (sub.get "perPage")
       n or 1
-    "Set": (k, v, subscription) ->
+    "Set": (k, v, sub) ->
       check k, String
       check v, Match.Any
-      check subscription, Match.Where (s) ->
+      check sub, Match.Where (s) ->
         s.connection?.id?
+      changes = 0
       if v?
-        changes = @_set k, v, cid: subscription.connection.id
-      else
-        changes = 0
+        changes = @_set k, v, cid: sub.connection.id
+      else if !_.isString k
         for _k, _v of k
-          changes += @set _k, _v, cid: subscription.connection.id
+          changes += @set _k, _v, cid: sub.connection.id
       changes
     "Unsubscribe": ->
       subs = []
@@ -86,7 +87,9 @@
   serverInit: ->
     @setMethods()
     self = @
-    @preloadData "totalPages", @call "CountPages"
+    Meteor.onConnection (connection) =>
+      connection.onClose =>
+        delete @userSettings[connection.id]
     Meteor.publish @name, (page) ->
       self.publish.call self, page, @
     Meteor.publish @name + "_data", ->
@@ -97,10 +100,10 @@
     @queue = []
     @setTemplates()
     @countPages()
+    Tracker.autorun =>
+      Meteor.userId()
+      @reload()
     @setInfiniteTrigger()  if @infinite
-    @syncSettings ((err, changes) ->
-      @reload()  if changes > 0
-    ).bind @
   reload: ->
     @unsubscribe =>
       @requested = []
@@ -134,6 +137,7 @@
           for k, v of arguments
             arg[k] = v
           arg.push @
+          @get = ((self, k) -> self.get k, @connection.id).bind @, self
           r = f.apply self, arg
           r
       )(f)
@@ -159,36 +163,40 @@
   get: (setting, connectionId) ->
     @userSettings[connectionId]?[setting] ? @[setting]
   set: (k, opts...) ->
+    ch = 0
     switch opts.length
       when 0
-        check k, Object
-        for _k, _v of k
-          @_set _k, _v
+        if !_.isString k
+          for _k, _v of k
+            ch += @_set _k, _v
       when 1
         if _.isObject k
           if _.isFunction opts[0]
             opts = cb: opts[1]
           for _k, _v of k
-            @_set _k, _v, opts
+            ch += @_set _k, _v, opts
         else
           check k, String
-          @_set k, opts[0]
+          ch = @_set k, opts[0]
       when 2
         if _.isFunction opts[1]
           opts[1] = cb: opts[1]
-        @_set k, opts[0], opts[1]
+        ch = @_set k, opts[0], opts[1]
       when 3
         check opts[1], Object
         check opts[2], Function
         opts[1].cb = opts[2]
-        @_set k, opts[1], opts
+        ch = @_set k, opts[1], opts
+    if Meteor.isClient and ch
+      @reload()
+    ch
   _set: (k, v, opts = {}) ->
     check k, String
     ch = 0
     if Meteor.isServer or !@[k]? or @settings[k]?[0]
       if @settings[k]?[1]? and @settings[k]?[1] isnt true
         check v, @settings[k][1]
-      if !EJSON.equals @[k], v
+      if !EJSON.equals @get(k, opts?.cid), v
         ch = 1
       if Meteor.isClient
         @call "Set", k, v, (e, r) ->
@@ -196,8 +204,9 @@
           opts.cb? ch
       else
         if opts.cid
-          @userSettings[opts.cid] ?= {}
-          @userSettings[opts.cid][k] = v
+          if ch
+            @userSettings[opts.cid] ?= {}
+            @userSettings[opts.cid][k] = v
         else
           @[k] = v
         opts.cb? ch
@@ -283,34 +292,37 @@
   countPages: _.throttle ->
       @call "CountPages", ((e, r) ->
         @sess "totalPages", r
+        if @sess("currentPage") > r
+          @sess "currentPage", 1
       ).bind(@)
     , 100
   publishNone: ->
-    @realFilters = false
     @ready()
     return @Collection.find null
-  publish: (page, subscription) ->
+  publish: (page, sub) ->
     check page, Number
-    check subscription, Match.Where (s) ->
+    check sub, Match.Where (s) ->
       s.ready?
-    connectionId = subscription.connection.id
+    cid = sub.connection.id
+    get = sub.get = ((cid, k) -> @get k, cid).bind(@, cid)
+    set = sub.set = ((cid, k, v) -> @set k, v, cid: cid).bind(@, cid)
+    delete @userSettings[cid]?.realFilters
+    delete @userSettings[cid]?.nPublishedPages
     @setPerPage()
-    skip = (page - 1) * @perPage
+    skip = (page - 1) * get "perPage"
     skip = 0  if skip < 0
-    filters = @filters
+    filters = get "filters"
     options = 
-      sort: @sort
-      fields: @fields
+      sort: get "sort"
+      fields: get "fields"
       skip: skip
-      limit: @perPage
-    @realFilters = null
-    @nPublishedPages = null
+      limit: get "perPage"
     if @auth?
-      r = @auth.call @, skip, subscription
+      r = @auth.call @, skip, sub
       if !r
         return @publishNone()
       else if _.isNumber r
-        @nPublishedPages = r
+        set "nPublishedPages", r
         return @publishNone()  if page > r
       else if _.isArray(r) and r.length is 2
         if _.isFunction r[0].fetch
@@ -320,12 +332,13 @@
           options = r[1]
       else if _.isFunction r.fetch
         c = r
-    @realFilters ?= filters
+    if !EJSON.equals({}, filters) and !EJSON.equals(get("filters"), filters)
+      set "realFilters", filters
     c ?= @Collection.find filters, options
     init = true
     self = @
     handle = c.observe
-      addedAt: ((subscription, doc, at) ->
+      addedAt: ((sub, doc, at) ->
         try
           doc["_#{@id}_p"] = page
           doc["_#{@id}_i"] = at
@@ -333,60 +346,60 @@
           delete doc._id
           unless init
             #Add to @PaginatedCollection
-            subscription.added(@id, id, doc)
-            (@Collection.find @filters,
-              sort: @sort
-              fields: @fields
+            sub.added(@id, id, doc)
+            (@Collection.find get "filters",
+              sort: get "sort"
+              fields: get "fields"
               skip: skip
-              limit: @perPage
+              limit: get "perPage"
             ).forEach (o, i) =>
               if i >= at
-                subscription.changed(@id, o._id, _.object([["_#{@id}_i", i + 1]]))
+                sub.changed(@id, o._id, _.object([["_#{@id}_i", i + 1]]))
         catch e
-      ).bind @, subscription
+      ).bind @, sub
     handle2 = c.observeChanges
-      movedBefore: ((subscription, id, before) ->
+      movedBefore: ((sub, id, before) ->
         ref = false
-        (@Collection.find @filters,
-          sort: @sort
-          fields: @fields
+        (@Collection.find get "filters",
+          sort: get "sort"
+          fields: get "fields"
           skip: skip
-          limit: @perPage
+          limit: get "perPage"
         ).forEach (o, i) =>
           if !ref and o._id is before
             ref = true
             at = i
           if ref
-            subscription.changed(@id, o._id, _.object([["_#{@id}_i", i + 1]]))
-          subscription.changed(@id, id, _.object([["_#{@id}_i", i]]))
+            sub.changed(@id, o._id, _.object([["_#{@id}_i", i + 1]]))
+          sub.changed(@id, id, _.object([["_#{@id}_i", i]]))
         #Change in @PaginatedCollection
-      ).bind @, subscription
-      changed: ((subscription, id, fields) ->
+      ).bind @, sub
+      changed: ((sub, id, fields) ->
         try
           #Change in @PaginatedCollection
-          subscription.changed @id, id, fields
+          sub.changed @id, id, fields
         catch e
-      ).bind @, subscription
-      removed: ((subscription, id) ->
+      ).bind @, sub
+      removed: ((sub, id) ->
         try
           #Remove from @PaginatedCollection
-          subscription.removed @id, id
+          sub.removed @id, id
         catch e
-      ).bind @, subscription
+      ).bind @, sub
     n = 0
     c.forEach ((doc, index, cursor) ->
       n++
       doc["_#{@id}_p"] = page
       doc["_#{@id}_i"] = index
       #Initial add to @PaginatedCollection
-      subscription.added @id, doc._id, doc
+      sub.added @id, doc._id, doc
     ).bind @
     init = false
-    subscription.onStop ->
+    sub.onStop ->
       handle.stop()
       handle2.stop()
     @ready()
-    @subscriptions.push subscription
+    @subscriptions.push sub
     c
   loading: (p) ->
     if !@fastRender and p is @currentPage() and Session?
@@ -547,6 +560,8 @@
       @lastPage = page
     @countPages()
     @checkQueue()
+
+
 
 Meteor.Pagination = Pages
 
