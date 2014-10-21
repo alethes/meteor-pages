@@ -442,7 +442,8 @@
       @sess "ready", true
   checkInitPage: ->
     @init = false
-    if location.pathname.match new RegExp("#{@route}([0-9]+)")
+    m = location.pathname.match new RegExp("#{@route}([0-9]+)")
+    if m
       p = parseInt m[1]
     else
       p = 1
