@@ -108,7 +108,7 @@
     @setTemplates()
     @countPages()
     Tracker.autorun =>
-      Meteor.userId()
+      Meteor?.userId()
       @reload()
     @setInfiniteTrigger()  if @infinite
   reload: ->
