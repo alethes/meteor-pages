@@ -19,9 +19,17 @@ Template._pagesPage.helpers
     return true  if @fastRender
     @sess "ready"
   items: ->
-    #console.log @PaginatedCollection.findOne()
     @checkInitPage()  if @init
-    n = @sess (if @isReady() then "currentPage" else "oldPage")
+    cp = @sess "currentPage"
+    op = @sess "oldPage"
+    @sess "ready"
+    if @received[cp]
+      @ready true
+      n = cp
+    else
+      @sess "ready", false
+      @getPage cp
+      n = op
     return []  unless n?
     p = @getPage n
     return []  unless p?
@@ -47,16 +55,13 @@ Template._pagesNav.helpers
     "#"
   paginationNeighbors: ->
     @paginationNeighbors()
-
-Template._pagesNav.events
   "click a": (e) ->
-      n = e.target.parentNode.parentNode.parentNode.getAttribute 'data-pages'
-      self = Meteor.Pagination::instances[n]
-      (_.throttle (e, self, n) ->
-        unless self.router
+      (_.throttle (e, n) ->
+        self = Meteor.Pagination::instances[e.target.parentNode.parentNode.parentNode.getAttribute 'data-pages']
+        unless self.router is "iron-router"
           e.preventDefault()
           self.onNavClick.call self, n
-      , self.rateLimit * 1000)(e, self, @n)
+      , self.rateLimit * 1000)(e, @n)
 
 Template._pagesTableItem.helpers
   attrs: (self) ->

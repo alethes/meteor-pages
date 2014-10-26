@@ -1,6 +1,6 @@
 @__Pages = class Pages
   settings:
-    #name: [availableToTheClient, expectedTypes(s), defaultValue, defaultValueAuthorizationFunction?]
+    #settingName: [canBeMadeAvailableToTheClient, expectedTypes(s), defaultValue]
     dataMargin: [true, Number, 3]
     divWrapper: [true, Match.Optional(String), undefined] #If defined, should be a name of the wrapper's CSS classname
     fields: [true, Object, {}]
@@ -16,10 +16,13 @@
     route: [true, String, "/page/"]
     router: [true, Match.Optional(String), undefined] #Can be any type. Use only in comparisons. Expects String or Boolean
     routerTemplate: [true, String, "pages"]
-    routerLayout: [true, String, "layout"]
+    routerLayout: [true, Match.Optional(String), undefined
+    #"layout"
+    ]
     sort: [true, Object, {}]
     #Unavailable to the client after initialization
     auth: [false, Match.Optional(Function), undefined]
+    availableSettings: [false, Object, {}]
     fastRender: [false, Boolean, false]
     infinite: [false, Boolean, false]
     infiniteItemsLimit: [false, Number, Infinity]
@@ -30,6 +33,7 @@
     homeRoute: [false, String, "/"]
     pageTemplate: [false, String, "_pagesPageCont"]
     navTemplate: [false, String, "_pagesNavCont"]
+    onDeniedSetting: [false, Function, (k, v, e) -> console.log "Changing #{k} not allowed"]
     table: [false, Boolean, false]
     tableItemTemplate: [false, String, "_pagesTableItem"]
     tableTemplate: [false, String, "_pagesTable"]
@@ -52,6 +56,9 @@
       check v, Match.Any
       check sub, Match.Where (s) ->
         s.connection?.id?
+      return 0  if @valuesEqual(@get(k, sub.connection.id), v)
+      if !@availableSettings[k] or (_.isFunction(@availableSettings[k]) and !@availableSettings[k] v, sub)
+        @error 4002, "Changing #{k} not allowed."
       changes = 0
       if v?
         changes = @_set k, v, cid: sub.connection.id
@@ -68,12 +75,12 @@
           subs.push i
       @subscriptions = subs
       true
-  constructor: (collection, settings) ->
+  constructor: (collection, settings = {}) ->
     unless @ instanceof Meteor.Pagination
       @error 4000, "The Meteor.Pagination instance has to be initiated with `new`"
     @setCollection collection
+    @set settings, init: true
     @setDefaults()
-    @set settings
     @setRouter()
     @[(if Meteor.isServer then "server" else "client") + "Init"]()
     @registerInstance()
@@ -95,8 +102,8 @@
     Meteor.publish @name + "_data", ->
       self.PreloadedData.find()
   clientInit: ->
-    @requested = []
-    @received = []
+    @requested = {}
+    @received = {}
     @queue = []
     @setTemplates()
     @countPages()
@@ -106,8 +113,8 @@
     @setInfiniteTrigger()  if @infinite
   reload: ->
     @unsubscribe =>
-      @requested = []
-      @received = []
+      @requested = {}
+      @received = {}
       @queue = []
       @call "CountPages", (e, total) =>
         @sess "totalPages", total
@@ -120,7 +127,7 @@
       cb()  if cb?
   setDefaults: ->
     for k, v of @settings
-      @[k] = v[2]  if v[2]?
+      @[k] ?= v[2]  if v[2]?
   syncSettings: (cb) ->
     S = {}
     for k, v of @settings
@@ -155,6 +162,7 @@
       args[last] = args[last].bind @
     Meteor.call.apply @, args
   sess: (k, v) ->
+    return  if !Session?
     k = "#{@id}.#{k}"
     if v?
       Session.set k, v
@@ -193,14 +201,18 @@
   _set: (k, v, opts = {}) ->
     check k, String
     ch = 0
-    if Meteor.isServer or !@[k]? or @settings[k]?[0]
+    if Meteor.isServer or !@[k]? or @settings[k]?[0] or opts.init
       if @settings[k]?[1]? and @settings[k]?[1] isnt true
         check v, @settings[k][1]
-      if !EJSON.equals @get(k, opts?.cid), v
+      oldV = @get(k, opts?.cid)
+      if !@valuesEqual(oldV, v)
+        @[k] = v
         ch = 1
       if Meteor.isClient
         @call "Set", k, v, (e, r) ->
-          @[k] = v
+          if e
+            @[k] = oldV
+            return @onDeniedSetting.call @, k, v, e
           opts.cb? ch
       else
         if opts.cid
@@ -211,9 +223,10 @@
           @[k] = v
         opts.cb? ch
     else
-      console.log "Modifying #{k} not allowed."
-      #@error 4002, "Setting #{k} not available."
+      @onDeniedSetting.call @, k, v
     ch
+  valuesEqual: (v1, v2) ->
+    EJSON.equals(v1, v2) or (v1?.toString? and v2?.toString? and v1.toString() is v2.toString())
   setId: (name) ->
     if @templateName
       name = @templateName
@@ -268,7 +281,8 @@
             template: t
             layoutTemplate: l
             onBeforeAction: ->
-              self.onNavClick parseInt @params.n
+              Tracker.nonreactive =>
+                self.onNavClick parseInt @params.n
       if Meteor.isServer and @fastRender
         self = @
         FastRender.route "#{@route}:n", (params) ->
@@ -295,7 +309,7 @@
         if @sess("currentPage") > r
           @sess "currentPage", 1
       ).bind(@)
-    , 100
+    , 500
   publishNone: ->
     @ready()
     return @Collection.find null
@@ -402,7 +416,7 @@
     @subscriptions.push sub
     c
   loading: (p) ->
-    if !@fastRender and p is @currentPage() and Session?
+    if !@fastRender and p is @currentPage()
       @sess "ready", false
   now: ->
     (new Date()).getTime()
@@ -410,14 +424,15 @@
     console.log "#{@name} #{msg}"
   logRequest: (p) ->
     @timeLastRequest = @now()
-    @loading p
-    @requested.push p  unless p in @requested
+    @requesting = p
+    @requested[p] = 1
   logResponse: (p) ->
-    @received.push p  unless p in @received
+    delete @requested[p]
+    @received[p] = 1
   clearQueue: ->
     @queue = []
   neighbors: (page) ->
-    @n = [page]
+    @n = []
     if @dataMargin is 0
       return @n
     for d in [1 .. @dataMargin]
@@ -428,6 +443,9 @@
       if pp > 0
         @n.push pp
     @n
+  queueNeighbors: (page) ->
+    for p in @neighbors page
+      @queue.push p  if !@received[p] and !@requested[p]
   paginationNavItem: (label, page, disabled, active = false) ->
     p: label
     n: page
@@ -460,9 +478,10 @@
     n
   onNavClick: (n) ->
     if n <= @sess("totalPages") and n > 0
-      Deps.nonreactive (->
-        @sess "oldPage", @sess "currentPage"
-      ).bind @
+      Deps.nonreactive =>
+        cp = @sess "currentPage"
+        if @received[cp]
+          @sess "oldPage", cp
       @sess "currentPage", n
   setInfiniteTrigger: ->
     window.onscroll = (_.throttle ->
@@ -479,10 +498,26 @@
           @sess("currentPage", @lastPage + 1)
     , @infiniteRateLimit * 1000
     ).bind @
-  checkQueue: ->
-    if @queue.length
-      i = @queue.shift() until i in @neighbors(@currentPage()) or not @queue.length
-      @requestPage i  if i in @neighbors @currentPage()
+  checkQueue: _.throttle ->
+    cp = @currentPage()
+    neighbors = @neighbors cp
+    if !@received[cp]
+      @clearQueue()
+      @requestPage cp
+      cp = String cp
+      for k, v of @requested
+        if k isnt cp
+          if @subscriptions[k]?
+            @subscriptions[k].stop()
+            delete @subscriptions[k]
+          delete @requested[k]
+    else if @queue.length
+      while @queue.length > 0
+        i = @queue.shift()
+        if i in neighbors
+          @requestPage i
+          break
+  , 500
   currentPage: ->
     if Meteor.isClient and @sess("currentPage")?
       @sess "currentPage"
@@ -491,7 +526,7 @@
   isReady: ->
     @sess "ready"
   ready: (p) ->
-    if p == true or p is @currentPage() and Session?
+    if p is true or p is @currentPage() and Session?
       @sess "ready", true
   checkInitPage: ->
     @init = false
@@ -510,8 +545,9 @@
       total = @sess "totalPages"
       return @ready true  if total is 0
       if page <= total
-        for p in @neighbors page
-          @requestPage p  unless p in @received
+        @requestPage page
+        @queueNeighbors page
+        @checkQueue()
       if @infinite
         n = @PaginatedCollection.find({},
           fields: @fields
@@ -523,7 +559,7 @@
           skip: if @infiniteItemsLimit isnt Infinity and n > @infiniteItemsLimit then n - @infiniteItemsLimit else 0
           limit: @infiniteItemsLimit
         )
-      else #if page in @received
+      else
         c = @PaginatedCollection.find(
           _.object([
             ["_#{@id}_p", page]
@@ -540,18 +576,19 @@
             @countPages()
       c.fetch()
   requestPage: (page) ->
-    return  if !page or page in @requested
-    @clearQueue()  if page is @currentPage()
-    @queue.push page
+    #if page not in @received
+    #  @loading page
+    return  if !page or @requested[page] or @received[page]
+    #@clearQueue()  if page is @currentPage()
+    #@queue.push page
     @logRequest page
     Meteor.defer ((page) ->
       @subscriptions[page] = Meteor.subscribe @name, page,
         onReady: ((page) ->
           @onPage page
         ).bind @, page
-        onError: ((e) ->
-          new Meteor.Error e.message
-        ).bind @
+        onError: (e) =>
+          @error e.message
     ).bind @, page
   onPage: (page) ->
     @logResponse page
