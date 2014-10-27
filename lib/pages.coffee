@@ -16,9 +16,7 @@
     route: [true, String, "/page/"]
     router: [true, Match.Optional(String), undefined] #Can be any type. Use only in comparisons. Expects String or Boolean
     routerTemplate: [true, String, "pages"]
-    routerLayout: [true, Match.Optional(String), undefined
-    #"layout"
-    ]
+    routerLayout: [true, Match.Optional(String), undefined]
     sort: [true, Object, {}]
     #Unavailable to the client after initialization
     auth: [false, Match.Optional(Function), undefined]
@@ -30,7 +28,7 @@
     infiniteRateLimit: [false, Number, 1]
     pageSizeLimit: [false, Number, 60]
     rateLimit: [false, Number, 1]
-    homeRoute: [false, String, "/"]
+    homeRoute: [false, Match.OneOf(String, Array), "/"]
     pageTemplate: [false, String, "_pagesPageCont"]
     navTemplate: [false, String, "_pagesNavCont"]
     onDeniedSetting: [false, Function, (k, v, e) -> console?.log? "Changing #{k} not allowed."]
@@ -268,13 +266,16 @@
       init = true
       Router.map ->
         if self.homeRoute
-          @route "#{self.name}_home",
-            path: self.homeRoute
-            template: t
-            layoutTemplate: l
-            onBeforeAction: ->
-              self.sess "oldPage", 1
-              self.sess "currentPage", 1
+          if _.isString self.homeRoute
+            self.homeRoute = [self.homeRoute]
+          for hr, k in self.homeRoute
+            @route "#{self.name}_home#{k}",
+              path: hr
+              template: t
+              layoutTemplate: l
+              onBeforeAction: ->
+                self.sess "oldPage", 1
+                self.sess "currentPage", 1
         unless self.infinite
           @route "#{self.name}_page",
             path: pr
@@ -290,7 +291,7 @@
           @subscribe self.name, parseInt params.n
         FastRender.route @homeRoute, ->
           @subscribe self.name + "_data"
-          @subscribe self.name, 1
+          @subscribe self.name, 1    
   setPerPage: ->
     @perPage = if @pageSizeLimit < @perPage then @pageSizeLimit else @perPage
   setTemplates: ->
