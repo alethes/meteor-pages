@@ -116,15 +116,15 @@ Unavailable to the client:
   The page number is not exposed because it shouldn't be necessary and page-dependent authorization rules would render calculation of the total number of pages ineffective. The total page count is needed for displaying navigation controls properly.
   The authorization function should return one of the following:
    - *true* - grants unrestricted access to the paginated collection
-   - a ***falsy** value* - denies access to the paginated collection
+   - a *falsy value* - denies access to the paginated collection
    - a *Number* - publishes only pages with page number not greater than the specified number (1-based numbering is used for pages).
    - an *Array* of the form: [*filters*, *options*] - publishes `this.Collection.find(*filters*, *option*)`
    - a *Mongo.Collection.Cursor* (or some other cursor with a compatible interface) - publishes the cursor.
    - an *Array of Mongo.Collection.Cursor objects* (or some others cursor with a compatible interface) - publishes the cursors.
-   **When publishing a cursor or an array of cursors, you have to make sure to set **realFilters** (filters used in publication; sometimes different from filters visible to the client) or **nPublishedPages** (explicit number of published pages) manually to ensure proper rendering of navigation controls. In most cases, it's recommended to return an array with filters and options (option 4) instead.**
+   When publishing a cursor or an array of cursors, you have to make sure to set *realFilters* (filters used in publication; sometimes different from filters visible to the client) or *nPublishedPages* (explicit number of published pages) manually to ensure proper rendering of navigation controls. In most cases, it's recommended to return an array with filters and options (option 4) instead.
 + **availableSettings (*Object*, default = {})** - defines rules for changes in settings initiated by the client. A valid entry references the name of a setting by key and has one of the following:
-   - *true* - allows or changes to the setting (if not otherwise limited by constraints such as `pageSizeLimit`)
-   - ***falsy** value* - explicitly disallows or modifications. Has the same effect as leaving the setting out.
+   - *true* - allows all changes to the setting (if not otherwise limited by constraints such as `pageSizeLimit`)
+   - a *falsy value* - explicitly disallows or modifications. Has the same effect as leaving the setting out.
    - a *Function* - defines a policy controlling changes in the specified setting.
 + **divWrapper (*String, Boolean*, default = **undefined**)** - if provided, the Pagination page is wrapped in a div with the provided class name
 + **fastRender (*Boolean*, default = false)** - determines whether *fast-render* package should be used to speed up page loading
@@ -152,7 +152,9 @@ Currently, the following examples are available in the */examples* directory:
 
 + *basic* - the most straightforward way of using *Pages*. The default item template simply lists each item's attributes.
 
-+ *multi-collection* - multiple collection on a single page
++ *iron-router* - basic example of iron-router integration
+
++ *multi-collection* - multiple paginations on a single page
 
 + *table* - a data table, constructed automatically based on the list of fields to display
 
