@@ -517,6 +517,7 @@ this.__Pages = Pages = (function() {
           _ref1 = self.homeRoute;
           for (k = _i = 0, _len = _ref1.length; _i < _len; k = ++_i) {
             hr = _ref1[k];
+            console.log(hr);
             this.route("" + self.name + "_home" + k, {
               path: hr,
               template: t,

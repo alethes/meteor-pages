@@ -244,15 +244,15 @@
       "hash": "969f68786bbc68e6cad299e74922a53af3d1404b"
     },
     {
-      "path": "packages/jquery.js",
+      "path": "packages/reactive-dict.js",
       "where": "client",
       "type": "js",
       "cacheable": true,
-      "url": "/packages/jquery.js?265926494aaa3929cd2e30da265211c5929f37a4",
-      "sourceMap": "packages/jquery.js.map",
-      "sourceMapUrl": "/packages/265926494aaa3929cd2e30da265211c5929f37a4.map",
-      "size": 1295407,
-      "hash": "265926494aaa3929cd2e30da265211c5929f37a4"
+      "url": "/packages/reactive-dict.js?6b25309b1f0dcf775b44984324878d6f8ad1abc2",
+      "sourceMap": "packages/reactive-dict.js.map",
+      "sourceMapUrl": "/packages/6b25309b1f0dcf775b44984324878d6f8ad1abc2.map",
+      "size": 19802,
+      "hash": "6b25309b1f0dcf775b44984324878d6f8ad1abc2"
     },
     {
       "path": "packages/deps.js",
@@ -264,6 +264,17 @@
       "sourceMapUrl": "/packages/504589e1e9585dec8f9f6094e5a87b22de3783a1.map",
       "size": 1442,
       "hash": "504589e1e9585dec8f9f6094e5a87b22de3783a1"
+    },
+    {
+      "path": "packages/jquery.js",
+      "where": "client",
+      "type": "js",
+      "cacheable": true,
+      "url": "/packages/jquery.js?265926494aaa3929cd2e30da265211c5929f37a4",
+      "sourceMap": "packages/jquery.js.map",
+      "sourceMapUrl": "/packages/265926494aaa3929cd2e30da265211c5929f37a4.map",
+      "size": 1295407,
+      "hash": "265926494aaa3929cd2e30da265211c5929f37a4"
     },
     {
       "path": "packages/htmljs.js",
@@ -321,50 +332,6 @@
       "hash": "599ba307216da826d8b335332ebcc9a497a369a0"
     },
     {
-      "path": "packages/spacebars.js",
-      "where": "client",
-      "type": "js",
-      "cacheable": true,
-      "url": "/packages/spacebars.js?3c496d2950151d744a8574297b46d2763a123bdf",
-      "sourceMap": "packages/spacebars.js.map",
-      "sourceMapUrl": "/packages/3c496d2950151d744a8574297b46d2763a123bdf.map",
-      "size": 42134,
-      "hash": "3c496d2950151d744a8574297b46d2763a123bdf"
-    },
-    {
-      "path": "packages/reactive-dict.js",
-      "where": "client",
-      "type": "js",
-      "cacheable": true,
-      "url": "/packages/reactive-dict.js?6b25309b1f0dcf775b44984324878d6f8ad1abc2",
-      "sourceMap": "packages/reactive-dict.js.map",
-      "sourceMapUrl": "/packages/6b25309b1f0dcf775b44984324878d6f8ad1abc2.map",
-      "size": 19802,
-      "hash": "6b25309b1f0dcf775b44984324878d6f8ad1abc2"
-    },
-    {
-      "path": "packages/session.js",
-      "where": "client",
-      "type": "js",
-      "cacheable": true,
-      "url": "/packages/session.js?442b1bc169c2a1fb8c1fc5420041baa1ed9cb940",
-      "sourceMap": "packages/session.js.map",
-      "sourceMapUrl": "/packages/442b1bc169c2a1fb8c1fc5420041baa1ed9cb940.map",
-      "size": 6487,
-      "hash": "442b1bc169c2a1fb8c1fc5420041baa1ed9cb940"
-    },
-    {
-      "path": "packages/alethes_pages.js",
-      "where": "client",
-      "type": "js",
-      "cacheable": true,
-      "url": "/packages/alethes_pages.js?39c2ed6b858d4841587084902216adb710b45230",
-      "sourceMap": "packages/alethes_pages.js.map",
-      "sourceMapUrl": "/packages/39c2ed6b858d4841587084902216adb710b45230.map",
-      "size": 58337,
-      "hash": "39c2ed6b858d4841587084902216adb710b45230"
-    },
-    {
       "path": "packages/iron_core.js",
       "where": "client",
       "type": "js",
@@ -418,6 +385,39 @@
       "sourceMapUrl": "/packages/da7f2ac81c3fd9daebf49ce9a6980a54caa1dc17.map",
       "size": 250621,
       "hash": "da7f2ac81c3fd9daebf49ce9a6980a54caa1dc17"
+    },
+    {
+      "path": "packages/spacebars.js",
+      "where": "client",
+      "type": "js",
+      "cacheable": true,
+      "url": "/packages/spacebars.js?3c496d2950151d744a8574297b46d2763a123bdf",
+      "sourceMap": "packages/spacebars.js.map",
+      "sourceMapUrl": "/packages/3c496d2950151d744a8574297b46d2763a123bdf.map",
+      "size": 42134,
+      "hash": "3c496d2950151d744a8574297b46d2763a123bdf"
+    },
+    {
+      "path": "packages/session.js",
+      "where": "client",
+      "type": "js",
+      "cacheable": true,
+      "url": "/packages/session.js?442b1bc169c2a1fb8c1fc5420041baa1ed9cb940",
+      "sourceMap": "packages/session.js.map",
+      "sourceMapUrl": "/packages/442b1bc169c2a1fb8c1fc5420041baa1ed9cb940.map",
+      "size": 6487,
+      "hash": "442b1bc169c2a1fb8c1fc5420041baa1ed9cb940"
+    },
+    {
+      "path": "packages/alethes_pages.js",
+      "where": "client",
+      "type": "js",
+      "cacheable": true,
+      "url": "/packages/alethes_pages.js?890a681662b62e2f25e75bd1db662c48251eae8e",
+      "sourceMap": "packages/alethes_pages.js.map",
+      "sourceMapUrl": "/packages/890a681662b62e2f25e75bd1db662c48251eae8e.map",
+      "size": 58366,
+      "hash": "890a681662b62e2f25e75bd1db662c48251eae8e"
     },
     {
       "path": "packages/webapp.js",
@@ -475,11 +475,11 @@
       "where": "client",
       "type": "js",
       "cacheable": true,
-      "url": "/main.coffee.js?e082148c240c7cc65d910bbffd355eac778c3a70",
+      "url": "/main.coffee.js?31ca93003119adda91ebf9834454cb60378904e6",
       "sourceMap": "app/main.coffee.js.map",
-      "sourceMapUrl": "/e082148c240c7cc65d910bbffd355eac778c3a70.map",
-      "size": 547,
-      "hash": "e082148c240c7cc65d910bbffd355eac778c3a70"
+      "sourceMapUrl": "/31ca93003119adda91ebf9834454cb60378904e6.map",
+      "size": 532,
+      "hash": "31ca93003119adda91ebf9834454cb60378904e6"
     },
     {
       "path": "af5430b3c408041e79a0655e83f7b85e392bd058.css",

@@ -9,7 +9,7 @@ this.Pages = new Meteor.Pagination(Items, {
 
 this.Pages2 = new Meteor.Pagination(Items, {
   router: "iron-router",
-  homeRoute: ["/items2/", "/kopytko/"],
+  homeRoute: "/items2/",
   route: "/items2/",
   routerTemplate: "items2",
   routerLayout: "layout",
