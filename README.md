@@ -152,6 +152,8 @@ Currently, the following examples are available in the */examples* directory:
 
 + *basic* - the most straightforward way of using *Pages*. The default item template simply lists each item's attributes.
 
++ *iron-router* - basic example of iron-router integration
+
 + *multi-collection* - multiple collection on a single page
 
 + *table* - a data table, constructed automatically based on the list of fields to display
