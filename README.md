@@ -116,7 +116,7 @@ Unavailable to the client:
   The page number is not exposed because it shouldn't be necessary and page-dependent authorization rules would render calculation of the total number of pages ineffective. The total page count is needed for displaying navigation controls properly.
   The authorization function should return one of the following:
    - *true* - grants unrestricted access to the paginated collection
-   - a ***falsy** value* - denies access to the paginated collection
+   - a *falsy value* - denies access to the paginated collection
    - a *Number* - publishes only pages with page number not greater than the specified number (1-based numbering is used for pages).
    - an *Array* of the form: [*filters*, *options*] - publishes `this.Collection.find(*filters*, *option*)`
    - a *Mongo.Collection.Cursor* (or some other cursor with a compatible interface) - publishes the cursor.
