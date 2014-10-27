@@ -86,9 +86,6 @@
   error: (code, msg) ->
     msg = code  if !code?
     throw new Meteor.Error code, msg
-  preloadData: (key, value) ->
-    @PreloadedData.remove _id: key
-    @PreloadedData.insert _id: key, v: value
   serverInit: ->
     @setMethods()
     self = @
@@ -97,8 +94,6 @@
         delete @userSettings[connection.id]
     Meteor.publish @name, (page) ->
       self.publish.call self, page, @
-    Meteor.publish @name + "_data", ->
-      self.PreloadedData.find()
   clientInit: ->
     @requested = {}
     @received = {}
@@ -256,7 +251,6 @@
         instead of the collection's name to the <Meteor.Pagination> constructor."
     @setId @Collection._name
     @PaginatedCollection = new Mongo.Collection @id
-    @PreloadedData = new Mongo.Collection @id + "_data"
   setRouter: ->
     if @router is "iron-router"
       pr = "#{@route}:n"
