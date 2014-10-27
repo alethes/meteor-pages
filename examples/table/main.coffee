@@ -1,9 +1,12 @@
 #The Items collection has been created in testdata.coffee
 fields = ["name", "username", "email", "phone", "website"]
 @Pages = new Meteor.Pagination Items,
-  router: "iron-router"
-  perPage: 20
   dataMargin: 5
+  fastRender: true
+  perPage: 20
+  router: "iron-router"
+  sort: 
+    name: 1
   table:
     class: "table"
     fields: fields

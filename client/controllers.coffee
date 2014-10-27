@@ -21,16 +21,15 @@ Template._pagesPageCont.helpers
     self.table.wrapper
 
 Template._pagesTable.helpers
-  class: (self) ->
-    self.table.class or ""
-  fields: (self) ->
-    _.map self.table.fields, (v) -> value: v
-  header: (self) ->
-    _.map (self.table.header or self.table.fields), (v) -> value: v
+  class: ->
+    @table.class or ""
+  fields: ->
+    _.map @table.fields, (v) -> value: v
+  header: ->
+    _.map (@table.header or @table.fields), (v) -> value: v
 
 Template._pagesPage.helpers
   ready: ->
-    return true  if @fastRender
     @sess "ready"
   items: ->
     @checkInitPage()  if @init

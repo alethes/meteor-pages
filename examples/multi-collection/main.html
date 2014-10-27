@@ -1,0 +1,36 @@
+<head>
+  <title>Pages - multi-collection example</title>
+</head>
+
+<body>
+  {{> items}}
+  {{> items2}}
+  {{> items3}}
+</body>
+
+<template name="items">
+  <div class="page">
+    <h1>Collection 1</h1>
+    <h3>Ascending sort</h3>
+    {{> pagesNav}}
+    {{> pages}}
+  </div>
+</template>
+
+<template name="items2">
+  <div class="page">
+    <h1>Collection 1</h1>
+    <h3>Descending sort</h3>
+    {{> pagesNav}}
+    {{> pages}}
+  </div>
+</template>
+
+<template name="items3">
+  <div class="page">
+    <h1>Collection 2</h1>
+    <h3>Ascending sort</h3>
+    {{> pagesNav}}
+    {{> pages}}
+  </div>
+</template>

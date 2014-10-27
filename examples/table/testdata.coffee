@@ -1,9 +1,8 @@
 #Generates random data using Faker.js
 #Runs before main.coffee
 @Items = new Meteor.Collection "items"
-if Meteor.isServer
-    Meteor.startup ->
-      if @Items.find().count() isnt 1000
-        @Items.remove {}
-        for i in [1 .. 1000]
-          @Items.insert _.pick Faker.Helpers.createCard(), "name", "username", "email", "phone", "website"
+N = 1000
+if Meteor.isServer and @Items.find().count() isnt N
+  @Items.remove {}
+  for i in [1 .. N]
+    @Items.insert _.pick Faker.Helpers.createCard(), "name", "username", "email", "phone", "website"

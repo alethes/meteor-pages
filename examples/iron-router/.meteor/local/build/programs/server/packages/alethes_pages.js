@@ -59,7 +59,7 @@ this.__Pages = Pages = (function() {
         return typeof console !== "undefined" && console !== null ? typeof console.log === "function" ? console.log("Changing " + k + " not allowed.") : void 0 : void 0;
       }
     ],
-    table: [false, Boolean, false],
+    table: [false, Match.OneOf(Boolean, Object), false],
     tableItemTemplate: [false, String, "_pagesTableItem"],
     tableTemplate: [false, String, "_pagesTable"],
     templateName: [false, Match.Optional(String), void 0]

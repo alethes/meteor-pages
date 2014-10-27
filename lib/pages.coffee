@@ -32,7 +32,7 @@
     pageTemplate: [false, String, "_pagesPageCont"]
     navTemplate: [false, String, "_pagesNavCont"]
     onDeniedSetting: [false, Function, (k, v, e) -> console?.log? "Changing #{k} not allowed."]
-    table: [false, Boolean, false]
+    table: [false, Match.OneOf(Boolean, Object), false]
     tableItemTemplate: [false, String, "_pagesTableItem"]
     tableTemplate: [false, String, "_pagesTable"]
     templateName: [false, Match.Optional(String), undefined] #Defaults to collection name
@@ -269,7 +269,6 @@
           if _.isString self.homeRoute
             self.homeRoute = [self.homeRoute]
           for hr, k in self.homeRoute
-            console.log hr
             @route "#{self.name}_home#{k}",
               path: hr
               template: t

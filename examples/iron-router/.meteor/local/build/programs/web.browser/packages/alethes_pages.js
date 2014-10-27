@@ -83,7 +83,7 @@ this.__Pages = Pages = (function() {
         return typeof console !== "undefined" && console !== null ? typeof console.log === "function" ? console.log("Changing " + k + " not allowed.") : void 0 : void 0;
       }
     ],
-    table: [false, Boolean, false],
+    table: [false, Match.OneOf(Boolean, Object), false],
     tableItemTemplate: [false, String, "_pagesTableItem"],
     tableTemplate: [false, String, "_pagesTable"],
     templateName: [false, Match.Optional(String), void 0]
@@ -1158,7 +1158,7 @@ Template.__checkName("_pagesTableItem");                                        
 Template["_pagesTableItem"] = new Template("Template._pagesTableItem", (function() {                                   // 89
   var view = this;                                                                                                     // 90
   return HTML.TR("\n    ", Blaze.Each(function() {                                                                     // 91
-    return Spacebars.dataMustache(view.lookup("attrs"), view.lookup("pagesData"));                                     // 92
+    return Spacebars.dataMustache(view.lookup("attrs"), view.lookup(".."));                                            // 92
   }, function() {                                                                                                      // 93
     return [ "\n      ", HTML.TD(Blaze.View(function() {                                                               // 94
       return Spacebars.mustache(view.lookup("value"));                                                                 // 95
@@ -1293,18 +1293,18 @@ Template._pagesPageCont.helpers({
 });
 
 Template._pagesTable.helpers({
-  "class": function(self) {
-    return self.table["class"] || "";
+  "class": function() {
+    return this.table["class"] || "";
   },
-  fields: function(self) {
-    return _.map(self.table.fields, function(v) {
+  fields: function() {
+    return _.map(this.table.fields, function(v) {
       return {
         value: v
       };
     });
   },
-  header: function(self) {
-    return _.map(self.table.header || self.table.fields, function(v) {
+  header: function() {
+    return _.map(this.table.header || this.table.fields, function(v) {
       return {
         value: v
       };
@@ -1314,6 +1314,7 @@ Template._pagesTable.helpers({
 
 Template._pagesPage.helpers({
   ready: function() {
+    console.log(this, arguments);
     if (this.fastRender) {
       return true;
     }

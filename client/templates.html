@@ -26,28 +26,28 @@
   {{/if}}
 </template>
 <template name="_pagesTable">
-  <table class="{{class pagesData}}">
+  <table class="{{class}}">
     <thead>
       <tr>
-        {{#each header pagesData}}
+        {{#each header}}
           <th>{{value}}</th>
         {{/each}}
       </tr>
     </thead>
     <tbody>
-      {{> _pagesPage pagesData}}
+      {{> _pagesPage}}
     </tbody>
   </table>
 </template>
 <template name="_pagesTableItem">
   <tr>
-    {{#each attrs pagesData}}
+    {{#each attrs ..}}
       <td>{{value}}</td>
     {{/each}}
   </tr>
 </template>
 <template name="_pagesPage">
-  {{#if ready}}
+  {{#if ready pagesData}}
   {{else}}
     {{> _pagesLoading}}
   {{/if}}
