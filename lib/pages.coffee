@@ -33,7 +33,7 @@
     homeRoute: [false, String, "/"]
     pageTemplate: [false, String, "_pagesPageCont"]
     navTemplate: [false, String, "_pagesNavCont"]
-    onDeniedSetting: [false, Function, (k, v, e) -> console.log "Changing #{k} not allowed"]
+    onDeniedSetting: [false, Function, (k, v, e) -> console?.log? "Changing #{k} not allowed."]
     table: [false, Boolean, false]
     tableItemTemplate: [false, String, "_pagesTableItem"]
     tableTemplate: [false, String, "_pagesTable"]
@@ -61,10 +61,10 @@
         @error 4002, "Changing #{k} not allowed."
       changes = 0
       if v?
-        changes = @_set k, v, cid: sub.connection.id
+        changes = @_set k, v, cid: sub.connection.id + @name
       else if !_.isString k
         for _k, _v of k
-          changes += @set _k, _v, cid: sub.connection.id
+          changes += @set _k, _v, cid: sub.connection.id + @name
       changes
     "Unsubscribe": ->
       subs = []
@@ -233,7 +233,7 @@
     if name of Pages::instances
       n = name.match /[0-9]+$/
       if n?
-        name = name[0 .. n[0].length] + parseInt(n) + 1
+        name = name[0 ... name.length - n[0].length] + (parseInt(n) + 1)
       else
         name = name + "2"
     @id = "pages_" + name
@@ -298,11 +298,15 @@
     if @table and @itemTemplate is "_pagesItemDefault"
       @itemTemplate = @tableItemTemplate
     for i in [@navTemplate, @pageTemplate, @itemTemplate, @tableTemplate]
-      Template[i].helpers pagesData: @
+      tn = @id + i
+      Template[tn] = new Blaze.Template "Template.#{tn}", Template[i].renderFunction
+      Template[tn].helpers _TemplateHelpers[i]
+      Template[tn].events _TemplateEvents[i]
+      Template[tn].helpers pagesData: @
     Template[name].helpers
       pagesData: @
-      pagesNav: Template[@navTemplate]
-      pages: Template[@pageTemplate]
+      pagesNav: Template[@id + @navTemplate]
+      pages: Template[@id + @pageTemplate]
   countPages: _.throttle ->
       @call "CountPages", ((e, r) ->
         @sess "totalPages", r

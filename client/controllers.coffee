@@ -1,3 +1,17 @@
+global = @
+
+th = Template::helpers
+@_TemplateHelpers = {}
+Template::helpers = (dict) ->
+  global._TemplateHelpers[@viewName.substr 9] = dict
+  th.apply @, arguments
+
+te = Template::events
+@_TemplateEvents = {}
+Template::events = (dict) ->
+  global._TemplateEvents[@viewName.substr 9] = dict
+  te.apply @, arguments
+
 Template._pagesPageCont.helpers
   divWrapper: (self) ->
     self.divWrapper
