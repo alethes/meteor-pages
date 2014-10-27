@@ -55,6 +55,8 @@ Template._pagesNav.helpers
     "#"
   paginationNeighbors: ->
     @paginationNeighbors()
+
+Template._pagesNav.events
   "click a": (e) ->
       (_.throttle (e, n) ->
         self = Meteor.Pagination::instances[e.target.parentNode.parentNode.parentNode.getAttribute 'data-pages']
