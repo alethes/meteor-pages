@@ -269,6 +269,7 @@
           if _.isString self.homeRoute
             self.homeRoute = [self.homeRoute]
           for hr, k in self.homeRoute
+            console.log hr
             @route "#{self.name}_home#{k}",
               path: hr
               template: t

@@ -1,0 +1,23 @@
+<head>
+  <title>Pages - Basic Usage</title>
+</head>
+
+<template name="layout">
+  <a href="/items/">View 1</a>
+  <a href="/items2/">View 2</a>
+  {{> yield}}
+</template>
+
+<template name="items">
+  <h1>View 1</h1>
+  <b>Ascending sort, 10 items per page</b>
+  {{> pagesNav}}
+  {{> pages}}
+</template>
+
+<template name="items2">
+  <h1>View 2</h1>
+  <b>Descending sort, 5 items per page</b>
+  {{> pagesNav}}
+  {{> pages}}
+</template>
