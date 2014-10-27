@@ -154,7 +154,7 @@ Currently, the following examples are available in the */examples* directory:
 
 + *iron-router* - basic example of iron-router integration
 
-+ *multi-collection* - multiple collection on a single page
++ *multi-collection* - multiple paaginations on a single page
 
 + *table* - a data table, constructed automatically based on the list of fields to display
 
