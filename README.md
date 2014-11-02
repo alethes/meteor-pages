@@ -127,7 +127,7 @@ Unavailable to the client:
    - *true* - allows all changes to the setting (if not otherwise limited by constraints such as `pageSizeLimit`)
    - a *falsy value* - explicitly disallows or modifications. Has the same effect as leaving the setting out.
    - a *Function* - defines a policy controlling changes in the specified setting.
-+ **divWrapper (*String, Boolean*, default = **undefined**)** - if provided, the Pagination page is wrapped in a div with the provided class name
++ **divWrapper (*String, Boolean*, default = "pageCont")** - if it's specified and table mode is not enabled, the Pagination page is wrapped in a div with the provided class name
 + **fastRender (*Boolean*, default = false)** - determines whether *fast-render* package should be used to speed up page loading
 + **homeRoute (*String*, default = "/")** - if "iron-router" is enabled, the specified route sets currentPage to 1
 + **infinite (*Boolean*, default = false)** - infinite scrolling
