@@ -2,7 +2,7 @@
   settings:
     #settingName: [canBeMadeAvailableToTheClient, expectedTypes(s), defaultValue]
     dataMargin: [true, Number, 3]
-    divWrapper: [true, Match.Optional(String), undefined] #If defined, should be a name of the wrapper's CSS classname
+    divWrapper: [true, Match.Optional(String), "pagesCont"] #If defined, should be a name of the wrapper's CSS classname
     fields: [true, Object, {}]
     filters: [true, Object, {}]
     itemTemplate: [true, String, "_pagesItemDefault"]
@@ -270,6 +270,7 @@
               onBeforeAction: ->
                 self.sess "oldPage", 1
                 self.sess "currentPage", 1
+                @next()
         unless self.infinite
           @route "#{self.name}_page",
             path: pr
@@ -278,13 +279,12 @@
             onBeforeAction: ->
               Tracker.nonreactive =>
                 self.onNavClick parseInt @params.n
+              @next()
       if Meteor.isServer and @fastRender
         self = @
         FastRender.route "#{@route}:n", (params) ->
-          @subscribe self.name + "_data"
           @subscribe self.name, parseInt params.n
         FastRender.route @homeRoute, ->
-          @subscribe self.name + "_data"
           @subscribe self.name, 1    
   setPerPage: ->
     @perPage = if @pageSizeLimit < @perPage then @pageSizeLimit else @perPage

@@ -28,6 +28,7 @@ Features
 + **Built-in iron-router integration**. Binds easily to any other router.
 + **Infinite scrolling**. Easily controlled and fully leveraging the package's powerful features.
 + **Automatic generation of paginated tables**.
++ **Secure design**. Effortlessly control what to publish, when to publish and what view modifications to allow (using the **availableSettings** feature).
 + **Built-in authorization support**. Easily restrict data access according to arbitrary sets of rules.
 + **Trivial customization on the fly**. Items per page, sorting, filters and more adjustable on the fly! Just modify a setting and see the pagination redrawing.
 + **Live sort**. All changes in the data are immediately reflected. Items move around within and across pages according to arbitrary sorting rules.

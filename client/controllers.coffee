@@ -14,7 +14,7 @@ Template::events = (dict) ->
 
 Template._pagesPageCont.helpers
   divWrapper: (self) ->
-    self.divWrapper
+    !self.table and self.divWrapper
   table: (self) ->
     self.table
   tableWrapper: (self) ->
@@ -40,7 +40,10 @@ Template._pagesPage.helpers
       @ready true
       n = cp
     else
-      @sess "ready", false
+      setTimeout =>
+        if !@received[cp]
+          @sess "ready", false
+      , 100
       @getPage cp
       n = op
     return []  unless n?
@@ -60,8 +63,6 @@ Template._pagesNav.helpers
     if self.router
       p = @n
       p = 1 if p < 1
-      unless self.sess("totalPages")?
-        self.sess "totalPages", self.PreloadedData.findOne(_id: "totalPages").v
       total = self.sess("totalPages")
       p = total if p > total
       return self.route + p
