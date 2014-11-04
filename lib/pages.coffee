@@ -22,16 +22,17 @@
     auth: [false, Match.Optional(Function), undefined]
     availableSettings: [false, Object, {}]
     fastRender: [false, Boolean, false]
+    homeRoute: [false, Match.OneOf(String, Array, Boolean), "/"]
     infinite: [false, Boolean, false]
     infiniteItemsLimit: [false, Number, Infinity]
     infiniteTrigger: [false, Number, .9]
     infiniteRateLimit: [false, Number, 1]
-    pageSizeLimit: [false, Number, 60]
-    rateLimit: [false, Number, 1]
-    homeRoute: [false, Match.OneOf(String, Array), "/"]
-    pageTemplate: [false, String, "_pagesPageCont"]
     navTemplate: [false, String, "_pagesNavCont"]
-    onDeniedSetting: [false, Function, (k, v, e) -> console?.log? "Changing #{k} not allowed."]
+    onDeniedSetting: [false, Function, (k, v, e) -> console?.log "Changing #{k} not allowed."]
+    pageSizeLimit: [false, Number, 60]
+    pageTemplate: [false, String, "_pagesPageCont"]
+    rateLimit: [false, Number, 1]
+    routeSettings: [false, Match.Optional(Function), undefined]
     table: [false, Match.OneOf(Boolean, Object), false]
     tableItemTemplate: [false, String, "_pagesTableItem"]
     tableTemplate: [false, String, "_pagesTable"]
@@ -46,14 +47,20 @@
   methods:
     "CountPages": (sub) ->
       n = sub.get "nPublishedPages"
-      return n  if n
-      n = Math.ceil @Collection.find(sub.get("realFilters") or {}).count() / (sub.get "perPage")
+      return n  if n?
+
+      n = Math.ceil @Collection.find(
+        $and: [
+          sub.get("filters"),
+          sub.get("realFilters") or {}
+        ]
+      ).count() / (sub.get "perPage")
       n or 1
     "Set": (k, v, sub) ->
       check k, String
-      check v, Match.Any
-      check sub, Match.Where (s) ->
-        s.connection?.id?
+      check v, @settings[k][1]
+      check sub, Match.Where (sub) ->
+        sub.connection?.id?
       return 0  if @valuesEqual(@get(k, sub.connection.id), v)
       if !@availableSettings[k] or (_.isFunction(@availableSettings[k]) and !@availableSettings[k] v, sub)
         @error 4002, "Changing #{k} not allowed."
@@ -167,15 +174,15 @@
     ch = 0
     switch opts.length
       when 0
-        if !_.isString k
+        if _.isObject k
           for _k, _v of k
             ch += @_set _k, _v
       when 1
         if _.isObject k
           if _.isFunction opts[0]
-            opts = cb: opts[1]
+            opts[0] = cb: opts[0]
           for _k, _v of k
-            ch += @_set _k, _v, opts
+            ch += @_set _k, _v, opts[0]
         else
           check k, String
           ch = @_set k, opts[0]
@@ -186,8 +193,8 @@
       when 3
         check opts[1], Object
         check opts[2], Function
-        opts[1].cb = opts[2]
-        ch = @_set k, opts[1], opts
+        opts[2] = cb: opts[2]
+        ch = @_set k, opts[1], opts[2]
     if Meteor.isClient and ch
       @reload()
     ch
@@ -201,7 +208,7 @@
       if !@valuesEqual(oldV, v)
         @[k] = v
         ch = 1
-      if Meteor.isClient
+      if Meteor.isClient and !opts.init
         @call "Set", k, v, (e, r) ->
           if e
             @[k] = oldV
@@ -219,11 +226,11 @@
       @onDeniedSetting.call @, k, v
     ch
   valuesEqual: (v1, v2) ->
-    EJSON.equals(v1, v2) or (v1?.toString? and v2?.toString? and v1.toString() is v2.toString())
+    EJSON.equals(v1, v2) or (_.isFunction(v1) and _.isFunction(v2) and v1.toString() is v2.toString())
   setId: (name) ->
     if @templateName
       name = @templateName
-    if name of Pages::instances
+    while name of Pages::instances
       n = name.match /[0-9]+$/
       if n?
         name = name[0 ... name.length - n[0].length] + (parseInt(n) + 1)
@@ -251,14 +258,39 @@
         instead of the collection's name to the <Meteor.Pagination> constructor."
     @setId @Collection._name
     @PaginatedCollection = new Mongo.Collection @id
+  linkTo: (page)->
+    if Router.current()?.params
+      params = Router.current().params
+      params.page = page
+      Router.routes["#{@name}_page"].path params
   setRouter: ->
     if @router is "iron-router"
-      pr = "#{@route}:n"
+      if @route.indexOf(":page") is -1
+        if @route[0] isnt "/"
+          @route = "/" + @route
+        if @route[@route.length - 1] isnt "/"
+          @route += "/"
+        pr = @route = "#{@route}:page"
       t = @routerTemplate
       l = @routerLayout ? undefined
       self = @
       init = true
       Router.map ->
+        unless self.infinite
+          @route "#{self.name}_page",
+            path: pr
+            template: t
+            layoutTemplate: l
+            onBeforeAction: ->
+              page = parseInt @params.page
+              if self.init
+                self.sess "oldPage", page
+                self.sess "currentPage", page
+              if self.routeSettings?
+                self.routeSettings @
+              Tracker.nonreactive =>
+                self.onNavClick page
+              @next()
         if self.homeRoute
           if _.isString self.homeRoute
             self.homeRoute = [self.homeRoute]
@@ -268,22 +300,16 @@
               template: t
               layoutTemplate: l
               onBeforeAction: ->
-                self.sess "oldPage", 1
-                self.sess "currentPage", 1
+                if self.routeSettings
+                  self.routeSettings @
+                if self.init
+                  self.sess "oldPage", 1
+                  self.sess "currentPage", 1
                 @next()
-        unless self.infinite
-          @route "#{self.name}_page",
-            path: pr
-            template: t
-            layoutTemplate: l
-            onBeforeAction: ->
-              Tracker.nonreactive =>
-                self.onNavClick parseInt @params.n
-              @next()
       if Meteor.isServer and @fastRender
         self = @
-        FastRender.route "#{@route}:n", (params) ->
-          @subscribe self.name, parseInt params.n
+        FastRender.route pr, (params) ->
+          @subscribe self.name, parseInt params.page
         FastRender.route @homeRoute, ->
           @subscribe self.name, 1    
   setPerPage: ->
@@ -333,6 +359,7 @@
     if @auth?
       r = @auth.call @, skip, sub
       if !r
+        set "nPublishedPages", 0
         return @publishNone()
       else if _.isNumber r
         set "nPublishedPages", r
@@ -528,14 +555,13 @@
     if p is true or p is @currentPage() and Session?
       @sess "ready", true
   checkInitPage: ->
-    @init = false
-    m = location.pathname.match new RegExp("#{@route}([0-9]+)")
-    if m
-      p = parseInt m[1]
-    else
-      p = 1
-    @sess "oldPage", p
-    @sess "currentPage", p
+    if @init and Router.current()?.route?.getName()
+      try
+        @initPage = parseInt(Router.current().route.params(location.href)?.page) or 1
+        @init = false
+        @sess "oldPage", @initPage
+        @sess "currentPage", @initPage
+      catch
   getPage: (page) ->
     if Meteor.isClient
       page = @currentPage()  unless page?
@@ -600,4 +626,3 @@
 
 
 Meteor.Pagination = Pages
-

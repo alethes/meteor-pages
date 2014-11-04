@@ -5,6 +5,7 @@
 <template name="layout">
   <a href="/items/">View 1</a>
   <a href="/items2/">View 2</a>
+  <a href="/items3/">View 3</a>
   {{> yield}}
 </template>
 
@@ -18,6 +19,16 @@
 <template name="items2">
   <h1>View 2</h1>
   <b>Descending sort, 5 items per page</b>
+  {{> pagesNav}}
+  {{> pages}}
+</template>
+
+<template name="items3">
+  <h1>View 3</h1>
+  <b>Descending sort, 5 items per page</b>
+  <a href="/items3/">All</a>
+  <a href="/items3/0/1">Group 0</a>
+  <a href="/items3/1/1">Group 1</a>
   {{> pagesNav}}
   {{> pages}}
 </template>

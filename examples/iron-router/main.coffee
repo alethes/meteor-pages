@@ -13,3 +13,14 @@
   routerLayout: "layout"
   sort: id: -1
   perPage: 5
+@Pages3 = new Meteor.Pagination Items,
+  availableSettings:
+    filters: true
+  router: "iron-router"
+  homeRoute: "/items3/"
+  route: "/items3/:group?/"
+  routerTemplate: "items3"
+  routerLayout: "layout"
+  routeSettings: (route) ->
+    @set "filters", if route.params.group? then {group: Number route.params.group} else {}
+  sort: id: 1

@@ -32,18 +32,16 @@ Template._pagesPage.helpers
   ready: ->
     @sess "ready"
   items: ->
-    @checkInitPage()  if @init
+    if @init
+      @checkInitPage()
     cp = @sess "currentPage"
     op = @sess "oldPage"
     @sess "ready"
-    if @received[cp]
+    if @received[cp] or (@fastRender and cp is @initPage)
       @ready true
       n = cp
     else
-      setTimeout =>
-        if !@received[cp]
-          @sess "ready", false
-      , 100
+      @sess "ready", false
       @getPage cp
       n = op
     return []  unless n?
@@ -65,7 +63,7 @@ Template._pagesNav.helpers
       p = 1 if p < 1
       total = self.sess("totalPages")
       p = total if p > total
-      return self.route + p
+      return self.linkTo p
     "#"
   paginationNeighbors: ->
     @paginationNeighbors()

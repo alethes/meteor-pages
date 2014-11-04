@@ -64,7 +64,7 @@ Of course, you can use any variable to store the object returned by `new Meteor.
 
 Settings
 --------
-Settings can be passed as a second argument to `Meteor.Pagination()`. Most of them can be changed on the client-side, causing an immediate redraw.
+Settings can be passed as a second argument to `Meteor.Pagination()`. Many of them can be changed on the client-side, causing an immediate redraw. Unless stated otherwise, user-defined functions are called in the context of the *Pagination* object.
 
 There are two ways to modify settings:
 
@@ -110,10 +110,10 @@ Available to the client:
 + **templateName (*String*, default = "")** - A name of the template to use. Defaults to the collection's name.
 
 Unavailable to the client:
-+ **auth (*Function, Boolean*, default = false)** - authorization function called by the built-in publication method with the following arguments:
++ **auth (*Function*, default = undefined)** - authorization function called by the built-in publication method with the following arguments:
    - *skip* - precalculated number of items to skip based on the number of page being published. Useful when returning a cursor.
    - *subscription* - the Meteor subscription object (*this* in *Meteor.publish()*). **In authenticated connections, *subscription.userId* holds the currently signed-in user's *_id*. Otherwise, it's *null*.**
-  The authorization function is called in the context of our *Meteor.Pagination* object (ie. it serves as *this*).
+  The authorization function is called in the context of the *Pagination* object.
   The page number is not exposed because it shouldn't be necessary and page-dependent authorization rules would render calculation of the total number of pages ineffective. The total page count is needed for displaying navigation controls properly.
   The authorization function should return one of the following:
    - *true* - grants unrestricted access to the paginated collection
@@ -135,10 +135,11 @@ Unavailable to the client:
 + **infiniteRateLimit (*Number*, default = 1)** - determines the minimum interval (in seconds) between subsequent page changes in infinite scrolling mode
 + **infiniteTrigger (*Number*, default = .8)** - if infinite scrolling is used, determines how far (for val > 1: in pixels, for 0 > val >= 1: in (1 - percent)) from the bottom of the page should the new data portion be requested
 + **navTemplate (*String*, default = "_pagesNav")** - name of the template used for displaying the pagination navigation
-+ **onDeniedSetting (*Function*, default = function(){})** - called when the setting is unavailable to the client (based on the rules defined in #availableSettings() or lack thereof).
++ **onDeniedSetting (*Function*, logs "Changing {{setting}} not allowed." to console by default)** - called when the setting is unavailable to the client (based on the rules defined in #availableSettings() or lack thereof).
 + **pageTemplate (*String*, default = "_pagesPage")** - name of the template used for displaying a page of items
 + **pageSizeLimit (*Number*, default = 60)** - limits the maximum number of items displayed per page
 + **rateLimit (*Number*, default = 1)** - determines the minimum interval (in seconds) between subsequent page changes
++ **routeSettings (*Function*, default = undefined)** - an optional function which, when *iron-router* is enabled, is called (in the context of the *Pagination* object) from *onBeforeAction* with the route object (`this` in *onBeforeAction*) as an argument. It enables modifying pagination settings (eg. filters) based on the route's parameters (see *iron-router* example, view 3).
 + **table (*Object, Boolean*, default = false)** - generates a table with data from the paginated collection. The following attributes can be provided:
   + **fields (*Array*, required)** - an array of fields to be displayed in subsequent columns of the table
   + **class (*String*, default = "")** - class name of the table
@@ -153,7 +154,9 @@ Currently, the following examples are available in the */examples* directory:
 
 + *basic* - the most straightforward way of using *Pages*. The default item template simply lists each item's attributes.
 
-+ *iron-router* - basic example of iron-router integration
++ *infinite* - infinite scrolling
+
++ *iron-router* - a basic example of iron-router integration
 
 + *multi-collection* - multiple paginations on a single page
 
