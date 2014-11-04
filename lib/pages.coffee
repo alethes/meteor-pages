@@ -300,7 +300,7 @@
               template: t
               layoutTemplate: l
               onBeforeAction: ->
-                if self.routeSettings
+                if self.routeSettings?
                   self.routeSettings @
                 if self.init
                   self.sess "oldPage", 1
