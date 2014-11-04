@@ -113,6 +113,7 @@
     @setInfiniteTrigger()  if @infinite
   reload: ->
     @unsubscribe =>
+      delete @initPage
       @requested = {}
       @received = {}
       @queue = []
@@ -555,13 +556,19 @@
     if p is true or p is @currentPage() and Session?
       @sess "ready", true
   checkInitPage: ->
-    if @init and Router.current()?.route?.getName()
-      try
-        @initPage = parseInt(Router.current().route.params(location.href)?.page) or 1
-        @init = false
-        @sess "oldPage", @initPage
-        @sess "currentPage", @initPage
-      catch
+    if @init 
+      if @router
+        Router.current()?.route?.getName()
+        try
+          @initPage = parseInt(Router.current().route.params(location.href)?.page) or 1
+          @init = false
+        catch
+          return
+      else
+        @initPage = 1
+        @init = false    
+    @sess "oldPage", @initPage
+    @sess "currentPage", @initPage
   getPage: (page) ->
     if Meteor.isClient
       page = @currentPage()  unless page?
