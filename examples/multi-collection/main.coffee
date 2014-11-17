@@ -3,6 +3,8 @@
   sort:
     items_id: 1
   templateName: "items"
+  availableSettings:
+  	filters: true
 @Pages2 = new Meteor.Pagination Items,
   sort:
     items_id: -1
@@ -11,3 +13,14 @@
   sort:
     items2_id: 1
   templateName: "items3"
+
+if Meteor.isClient
+  Template.body.events
+    "click #clearItemsFilter": (e) ->
+      Pages.set filters: {}
+      return
+    "click #setItemsFilter": (e) ->
+      Pages.set filters:
+        items_id:
+          $gt: 25
+      return
