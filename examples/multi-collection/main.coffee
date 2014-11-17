@@ -3,16 +3,19 @@
   sort:
     items_id: 1
   templateName: "items"
+  dataMargin: 0
   availableSettings:
   	filters: true
 @Pages2 = new Meteor.Pagination Items,
   sort:
     items_id: -1
   templateName: "items2"
+  dataMargin: 0
 @Pages3 = new Meteor.Pagination Items2,
   sort:
     items2_id: 1
   templateName: "items3"
+  dataMargin: 0
 
 if Meteor.isClient
   Template.body.events

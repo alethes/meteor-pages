@@ -43,13 +43,11 @@
     tableTemplate: [false, String, "_pagesTable"]
     templateName: [false, Match.Optional(String), undefined] #Defaults to collection name
   
+  # Prototype variables (shared between instances)
+  
   _ninstances: 0
-  _currentPage: 1
   collections: {}
-  init: true
   instances: {}
-  subscriptions: []
-  userSettings: {}
   
   methods:
     
@@ -78,10 +76,10 @@
       
       changes = 0
       if v?
-        changes = @_set k, v, cid: sub.connection.id + @name
+        changes = @_set k, v, cid: sub.connection.id
       else if !_.isString k
         for _k, _v of k
-          changes += @set _k, _v, cid: sub.connection.id + @name
+          changes += @set _k, _v, cid: sub.connection.id
       changes
     
     "Unsubscribe": ->
@@ -98,6 +96,15 @@
     unless @ instanceof Meteor.Pagination
       @error 4000, "The Meteor.Pagination instance has to be initiated with `new`"
     
+    # Instance variables
+    
+    @init = true
+    @subscriptions = []
+    @userSettings = {}
+    @_currentPage = 1
+
+    # Setup
+
     @setCollection collection
     @set settings, init: true
     @setDefaults()
@@ -227,7 +234,7 @@
   get: (setting, connectionId) ->
     @userSettings[connectionId]?[setting] ? @[setting]
   
-  # Sets the options for this instnace
+ # Sets the options for this instnace
     
   set: (k, opts...) ->
     ch = 0
@@ -279,12 +286,13 @@
       if @settings[k]?[1]? and @settings[k]?[1] isnt true
         check v, @settings[k][1]
       
-      # Set the parameter on this instance (client and server)  
+      # Set the parameter on this instance (client)  
+      
       oldV = @get(k, opts?.cid)
       if !@valuesEqual(oldV, v)
-        @[k] = v
         ch = 1
-      
+        @[k] = v if Meteor.isClient 
+            
       if Meteor.isClient and !opts.init
         # Change the setting for the corresponding instance on the server
         @call "Set", k, v, (e, r) ->
@@ -301,6 +309,7 @@
             @userSettings[opts.cid][k] = v
         else
           @[k] = v
+        
         opts.cb? ch
     else
       @onDeniedSetting.call @, k, v

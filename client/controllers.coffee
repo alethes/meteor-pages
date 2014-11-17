@@ -38,7 +38,7 @@ Template._pagesPage.helpers
     op = @sess "oldPage"
     @sess "ready"
     return [] if @sess "totalPages" is 0
-    if or @received[cp] or (@fastRender and cp is @initPage)
+    if @received[cp] or (@fastRender and cp is @initPage)
       @ready true
       n = cp
     else
