@@ -177,7 +177,6 @@
         S[k] = @[k]
     @set S, if cb? then {cb: cb.bind(@)} else null
   
-  
   # Creates server-side methods for this pagination *instance* by prefixing them with our unique id
   
   setMethods: ->
@@ -690,7 +689,7 @@
       @sess "currentPage", n
   
   setInfiniteTrigger: ->
-    window.onscroll = (_.throttle ->
+    $(window).scroll (_.throttle ->
       t = @infiniteTrigger
       oh = document.body.offsetHeight
       if t > 1
@@ -809,7 +808,7 @@
       
       c.fetch()
   
-  # Subscribes to the given âge
+  # Subscribes to the given page
   
   requestPage: (page) ->
     #if page not in @received
