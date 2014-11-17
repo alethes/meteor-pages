@@ -398,7 +398,7 @@
                 self.routeSettings @
               Tracker.nonreactive =>
                 self.onNavClick page
-              @next()
+              @next()               
         
         # Create one or more routes for the home (first) page
               
@@ -417,7 +417,7 @@
                   self.sess "oldPage", 1
                   self.sess "currentPage", 1
                 @next()
-      
+                      
       # If using FastRender, set it up for these routes
                 
       if Meteor.isServer and @fastRender
