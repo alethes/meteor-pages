@@ -151,10 +151,6 @@
   
   reload: ->
     @unsubscribe =>
-      delete @initPage
-      @requested = {}
-      @received = {}
-      @queue = []
       @call "CountPages", (e, total) =>
         @sess "totalPages", total
         p = @currentPage()
@@ -164,6 +160,10 @@
   
   unsubscribe: (cb) ->
     @call "Unsubscribe", =>
+      delete @initPage
+      @requested = {}
+      @received = {}
+      @queue = []
       cb()  if cb?
   
   setDefaults: ->
