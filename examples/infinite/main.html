@@ -3,12 +3,16 @@
 </head>
 
 <body>
-  <div style="position:relative;">
-    {{> items}}
-  </div>
+  {{> items}}
 </body>
 
 <template name="items">
   {{> pagesNav}}
   {{> pages}}
+</template>
+
+<template name="item">
+  <div style="width:100%;height:100px;background-color:{{color}}; text-align: center;">
+    <b style="font-size:84px;">{{id}}</b>
+  </div>
 </template>

@@ -6,3 +6,5 @@
 meteor-platform
 coffeescript
 alethes:pages
+iron:router
+

@@ -2,7 +2,7 @@
   settings:
     #settingName: [canBeMadeAvailableToTheClient, expectedTypes(s), defaultValue]
     dataMargin: [true, Number, 3]
-    divWrapper: [true, Match.Optional(String), "pagesCont"] #If defined, should be a name of the wrapper's CSS classname
+    divWrapper: [true, Match.OneOf(String, Boolean), "pagesCont"] #If defined, should be a name of the wrapper's CSS classname
     fields: [true, Object, {}]
     filters: [true, Object, {}]
     itemTemplate: [true, String, "_pagesItemDefault"]
@@ -24,8 +24,10 @@
     fastRender: [false, Boolean, false]
     homeRoute: [false, Match.OneOf(String, Array, Boolean), "/"]
     infinite: [false, Boolean, false]
-    infiniteItemsLimit: [false, Number, Infinity]
-    infiniteTrigger: [false, Number, .9]
+    infiniteCont: [false, Match.Optional(Function), undefined]
+    infiniteItemsLimit: [false, Match.Optional(Number), undefined]
+    infinitePagesLimit: [false, Match.Optional(Number), undefined]
+    infiniteTrigger: [false, Number, 1]
     infiniteRateLimit: [false, Number, 1]
     navTemplate: [false, String, "_pagesNavCont"]
     onDeniedSetting: [false, Function, (k, v, e) -> console?.log "Changing #{k} not allowed."]
@@ -61,15 +63,16 @@
       check v, @settings[k][1]
       check sub, Match.Where (sub) ->
         sub.connection?.id?
-      return 0  if @valuesEqual(@get(k, sub.connection.id), v)
+      cid = sub.connection.id + @name
+      return 0  if @valuesEqual(@get(k, cid), v)
       if !@availableSettings[k] or (_.isFunction(@availableSettings[k]) and !@availableSettings[k] v, sub)
         @error 4002, "Changing #{k} not allowed."
       changes = 0
       if v?
-        changes = @_set k, v, cid: sub.connection.id + @name
-      else if !_.isString k
+        changes = @_set k, v, cid: cid
+      else if _.isObject k
         for _k, _v of k
-          changes += @set _k, _v, cid: sub.connection.id + @name
+          changes += @_set _k, _v, cid: cid
       changes
     "Unsubscribe": ->
       subs = []
@@ -107,20 +110,32 @@
     @queue = []
     @setTemplates()
     @countPages()
+    $ =>
+      @$window = $ window
+      if @infinite
+        @$infiniteCont = if @infiniteCont then $(@infiniteCont) else @$window
+        #@scrollMonitor()
+      if @divWrapper
+        @$pageCont = $ ".#{@divWrapper}"
     Tracker.autorun =>
       Meteor.userId?()
       @reload()
     @setInfiniteTrigger()  if @infinite
+  calcItemOffsets: ->
+    @itemOffsets ?= {}
+    for c, k in @$pageCont.children()
+      @itemOffsets[k] ?= $(c).offset().top
   reload: ->
     @unsubscribe =>
       delete @initPage
+      delete @lastPage
       @requested = {}
       @received = {}
       @queue = []
       @call "CountPages", (e, total) =>
         @sess "totalPages", total
         p = @currentPage()
-        p = 1  if (not p?) or @resetOnReload or p > total
+        p = 1  if @infinite or !p? or @resetOnReload or p > total
         @sess "currentPage", false
         @sess "currentPage", p
   unsubscribe: (cb) ->
@@ -170,7 +185,7 @@
     else
       Session.get k
   get: (setting, connectionId) ->
-    @userSettings[connectionId]?[setting] ? @[setting]
+    @userSettings[connectionId]?[setting] or @[setting]
   set: (k, opts...) ->
     ch = 0
     switch opts.length
@@ -207,16 +222,16 @@
         check v, @settings[k][1]
       oldV = @get(k, opts?.cid)
       if !@valuesEqual(oldV, v)
-        @[k] = v
         ch = 1
       if Meteor.isClient and !opts.init
+        @[k] = v
         @call "Set", k, v, (e, r) ->
           if e
             @[k] = oldV
             return @onDeniedSetting.call @, k, v, e
           opts.cb? ch
       else
-        if opts.cid
+        if Meteor.isServer and opts.cid
           if ch
             @userSettings[opts.cid] ?= {}
             @userSettings[opts.cid][k] = v
@@ -266,6 +281,8 @@
       Router.routes["#{@name}_page"].path params
   setRouter: ->
     if @router is "iron-router"
+      if @infinite and @route is "/page/"
+        @route = "/from/"
       if @route.indexOf(":page") is -1
         if @route[0] isnt "/"
           @route = "/" + @route
@@ -277,21 +294,25 @@
       self = @
       init = true
       Router.map ->
-        unless self.infinite
-          @route "#{self.name}_page",
-            path: pr
-            template: t
-            layoutTemplate: l
-            onBeforeAction: ->
-              page = parseInt @params.page
+        @route "#{self.name}_page",
+          path: pr
+          template: t
+          layoutTemplate: l
+          onBeforeAction: ->
+            page = parseInt @params.page
+            if self.infinite
+              if self.init
+                self.sess "startFrom", page
+                self.sess "currentPage", 1
+            else
               if self.init
                 self.sess "oldPage", page
                 self.sess "currentPage", page
-              if self.routeSettings?
-                self.routeSettings @
               Tracker.nonreactive =>
                 self.onNavClick page
-              @next()
+            if self.routeSettings?
+              self.routeSettings @
+            @next()
         if self.homeRoute
           if _.isString self.homeRoute
             self.homeRoute = [self.homeRoute]
@@ -313,8 +334,10 @@
           @subscribe self.name, parseInt params.page
         FastRender.route @homeRoute, ->
           @subscribe self.name, 1    
-  setPerPage: ->
-    @perPage = if @pageSizeLimit < @perPage then @pageSizeLimit else @perPage
+  setPerPage: (cid) ->
+    perPage = @get "perPage", cid
+    lim = @get "pageSizeLimit", cid
+    @set "perPage", (if lim < perPage then lim else perPage), cid: cid
   setTemplates: ->
     name = @templateName or @name
     if @table and @itemTemplate is "_pagesItemDefault"
@@ -343,20 +366,21 @@
     check page, Number
     check sub, Match.Where (s) ->
       s.ready?
-    cid = sub.connection.id
+    cid = sub.connection.id + @name
     get = sub.get = ((cid, k) -> @get k, cid).bind(@, cid)
     set = sub.set = ((cid, k, v) -> @set k, v, cid: cid).bind(@, cid)
     delete @userSettings[cid]?.realFilters
     delete @userSettings[cid]?.nPublishedPages
-    @setPerPage()
-    skip = (page - 1) * get "perPage"
+    @setPerPage cid
+    perPage = get "perPage"
+    skip = (page - 1) * perPage
     skip = 0  if skip < 0
     filters = get "filters"
     options = 
       sort: get "sort"
       fields: get "fields"
       skip: skip
-      limit: get "perPage"
+      limit: perPage
     if @auth?
       r = @auth.call @, skip, sub
       if !r
@@ -510,21 +534,76 @@
         if @received[cp]
           @sess "oldPage", cp
       @sess "currentPage", n
+  scrollTypes: {}
+  #  34: 1
+  #  33: -1
+  #  35: 2
+  scroll: (type = 34) ->
+    type = @scrollTypes[type] or type
+    b = $ document.body
+    wh = @$window.height()
+    if !@_scrolling
+      @_scrolling = true
+      b.animate
+        scrollTop: b.scrollTop() + wh * type
+      , 500, =>
+        @_scrolling = false
+    false
+  scrollMonitor: ->
+    st = ost = @$infiniteCont.scrollTop()
+    int = 500
+    setInterval =>
+      st = @$infiniteCont.scrollTop()
+      v = Math.abs(ost - st) / int * 1000
+      ost = st
+    , int
   setInfiniteTrigger: ->
-    window.onscroll = (_.throttle ->
-      t = @infiniteTrigger
-      oh = document.body.offsetHeight
-      if t > 1
-        l = oh - t
-      else if t > 0
-        l = oh * t
-      else
-        return
-      if (window.innerHeight + window.scrollY) >= l
-        if @lastPage < @sess "totalPages"
-          @sess("currentPage", @lastPage + 1)
-    , @infiniteRateLimit * 1000
-    ).bind @
+    $ =>
+      @$window.on "keydown", (e) =>
+        return false  if @blockScrolling
+        return @scroll(e.keyCode)  if @scrollTypes[e.keyCode]
+      #$(".pagesCont").height($(window).height() * 10)
+      ###
+      @infiniteCont.scroll =>
+        pc = $(".pagesCont")
+        lc = $(pc.children()[@perPage * @sess("currentPage") - 1])
+        th = lc.offset().top + lc.height()#pc.height() + parseFloat pc.css "marginTop"
+        ch = @infiniteCont.height()
+        #th = 10 * ch
+        h = lc.offset().top + lc.height() - pc.offset().top
+        cs = @infiniteCont.scrollTop()
+        dh = h - ch
+        pt = cs - (dh * cs / (th - ch))
+        console.log pt
+        #pt = cs
+        pc.css
+          marginTop: pt
+          height: th - pt
+      ###
+      @$infiniteCont.scroll @infiniteCheck.bind(@)
+  infiniteCheck: _.throttle ->
+    cp = @sess "currentPage"
+    return  if cp >= @sess("totalPages")
+    t = @infiniteTrigger
+    oh = @$infiniteCont.height()
+    if (t >= 1 and cp < @lastVisiblePage() + t) or
+    (1 > t > 0 and (@$infiniteCont.innerHeight() + @$infiniteCont.scrollTop()) >= oh * t)
+      @blockScrolling = true
+      @sess("currentPage", cp + 1)
+  , @infiniteRateLimit * 1000
+  firstVisibleItem: ->
+    firstPixel = @$infiniteCont.scrollTop()
+    for k, v of @itemOffsets
+      return k - 1  if v > firstPixel
+    Number k
+  lastVisibleItem: ->
+    lastPixel = @$infiniteCont.scrollTop() + @$infiniteCont.height() - 1
+    for k, v of @itemOffsets
+      return k - 1  if v > lastPixel
+    Number k
+  lastVisiblePage: ->
+    @calcItemOffsets()
+    1 + @lastVisibleItem() / @perPage
   checkQueue: _.throttle ->
     cp = @currentPage()
     neighbors = @neighbors cp
@@ -575,21 +654,31 @@
       page = parseInt page
       return  if page is NaN
       total = @sess "totalPages"
-      return @ready true  if total is 0
-      if page <= total
-        @requestPage page
-        @queueNeighbors page
-        @checkQueue()
+      from = (@sess("startFrom") - 1) or 0
+      cp = from + @sess "currentPage"
+      return @ready true  if total is 0 
       if @infinite
-        n = @PaginatedCollection.find({},
+        lim = Infinity
+        if @infiniteItemsLimit
+          lim = @infiniteItemsLimit
+        else if @infinitePagesLimit
+          lim = @infinitePagesLimit * @perPage
+        query = {}
+        idp = "_#{@id}_p"
+        if from > 1
+          p = Math.floor(from / @perPage)
+          skip = from % @perPage
+          query[idp] =
+            $gt: p
+            $lte: p + cp
+        else
+          query[idp] = $lte: cp
+          skip = 0
+        c = @PaginatedCollection.find(query,
           fields: @fields
+          limit: lim
+          skip: skip
           sort: @sort
-        ).count()
-        c = @PaginatedCollection.find({},
-          fields: @fields
-          sort: @sort
-          skip: if @infiniteItemsLimit isnt Infinity and n > @infiniteItemsLimit then n - @infiniteItemsLimit else 0
-          limit: @infiniteItemsLimit
         )
       else
         c = @PaginatedCollection.find(
@@ -606,13 +695,13 @@
             @countPages()
           removed: =>
             @countPages()
+      if page <= total
+        @requestPage page
+        @queueNeighbors page
+        @checkQueue()
       c.fetch()
   requestPage: (page) ->
-    #if page not in @received
-    #  @loading page
     return  if !page or @requested[page] or @received[page]
-    #@clearQueue()  if page is @currentPage()
-    #@queue.push page
     @logRequest page
     Meteor.defer ((page) ->
       @subscriptions[page] = Meteor.subscribe @name, page,
@@ -627,6 +716,9 @@
     @ready page
     if @infinite
       @lastPage = page
+      if @lastPage < @sess "totalPages"
+        @requestPage(@lastPage + 1)
+      @infiniteCheck()
     @countPages()
     @checkQueue()
 
