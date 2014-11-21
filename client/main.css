@@ -1,3 +1,7 @@
+.pagesCont {
+  position:relative;
+}
+
 .pagesLoadingDefaultCont {
   position:absolute;
   width:100%;

@@ -14,7 +14,7 @@ Template::events = (dict) ->
 
 Template._pagesPageCont.helpers
   divWrapper: (self) ->
-    self.divWrapper
+    !self.table and self.divWrapper
   table: (self) ->
     self.table
   tableWrapper: (self) ->
@@ -32,11 +32,13 @@ Template._pagesPage.helpers
   ready: ->
     @sess "ready"
   items: ->
-    @checkInitPage()  if @init
+    if @init
+      @checkInitPage()
     cp = @sess "currentPage"
     op = @sess "oldPage"
     @sess "ready"
-    if @received[cp]
+    return [] if @sess "totalPages" is 0
+    if @received[cp] or (@fastRender and cp is @initPage)
       @ready true
       n = cp
     else
@@ -60,11 +62,9 @@ Template._pagesNav.helpers
     if self.router
       p = @n
       p = 1 if p < 1
-      unless self.sess("totalPages")?
-        self.sess "totalPages", self.PreloadedData.findOne(_id: "totalPages").v
       total = self.sess("totalPages")
       p = total if p > total
-      return self.route + p
+      return self.linkTo p
     "#"
   paginationNeighbors: ->
     @paginationNeighbors()

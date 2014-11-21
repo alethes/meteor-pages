@@ -1,12 +1,24 @@
 {
   "dependencies": [
     [
+      "application-configuration",
+      "1.0.3"
+    ],
+    [
       "base64",
       "1.0.1"
     ],
     [
+      "binary-heap",
+      "1.0.1"
+    ],
+    [
       "blaze",
-      "2.0.2"
+      "2.0.3"
+    ],
+    [
+      "callback-hook",
+      "1.0.1"
     ],
     [
       "check",
@@ -17,12 +29,20 @@
       "1.0.4"
     ],
     [
+      "ddp",
+      "1.0.11"
+    ],
+    [
       "deps",
       "1.0.5"
     ],
     [
       "ejson",
       "1.0.4"
+    ],
+    [
+      "follower-livedata",
+      "1.0.2"
     ],
     [
       "geojson-utils",
@@ -45,12 +65,20 @@
       "1.0.1"
     ],
     [
+      "logging",
+      "1.0.5"
+    ],
+    [
       "meteor",
-      "1.1.2"
+      "1.1.3"
     ],
     [
       "minimongo",
-      "1.0.4"
+      "1.0.5"
+    ],
+    [
+      "mongo",
+      "1.0.8"
     ],
     [
       "observe-sequence",
@@ -73,8 +101,12 @@
       "1.0.3"
     ],
     [
+      "retry",
+      "1.0.1"
+    ],
+    [
       "session",
-      "1.0.3"
+      "1.0.4"
     ],
     [
       "spacebars",
@@ -82,7 +114,7 @@
     ],
     [
       "templating",
-      "1.0.8"
+      "1.0.9"
     ],
     [
       "tracker",
@@ -94,6 +126,6 @@
     ]
   ],
   "pluginDependencies": [],
-  "toolVersion": "meteor-tool@1.0.34",
+  "toolVersion": "meteor-tool@1.0.35",
   "format": "1.0"
 }
