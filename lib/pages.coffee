@@ -289,9 +289,9 @@
       # Set the parameter on this instance (client)  
       
       oldV = @get(k, opts?.cid)
-      if !@valuesEqual(oldV, v)
+      if Meteor.isClient
         ch = 1
-        @[k] = v if Meteor.isClient 
+        @[k] = v
             
       if Meteor.isClient and !opts.init
         # Change the setting for the corresponding instance on the server
