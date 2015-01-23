@@ -304,7 +304,7 @@
         # When there's a connection id we store this setting on a per-connection basis, otherwise we just
         # set the setting on this pagination instance
         if opts.cid
-          if ch
+          if ch?
             @userSettings[opts.cid] ?= {}
             @userSettings[opts.cid][k] = v
         else
