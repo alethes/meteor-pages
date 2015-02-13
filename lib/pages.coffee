@@ -69,7 +69,8 @@
       check sub, Match.Where (sub) ->
         sub.connection?.id?
       
-      return 0 if @valuesEqual(@get(k, sub.connection.id), v)
+      #More expensive than setting to identical values, causes problems with regular expressions.
+      #return 0 if @valuesEqual(@get(k, sub.connection.id), v)
       
       if !@availableSettings[k] or (_.isFunction(@availableSettings[k]) and !@availableSettings[k] v, sub)
         @error 4002, "Changing #{k} not allowed."
@@ -284,9 +285,9 @@
       # Set the parameter on this instance (client)  
       
       oldV = @get(k, opts?.cid)
-      if !@valuesEqual(oldV, v)
+      if Meteor.isClient
         ch = 1
-        @[k] = v if Meteor.isClient 
+        @[k] = v
             
       if Meteor.isClient and !opts.init
 
@@ -300,7 +301,7 @@
         # When there's a connection id we store this setting on a per-connection basis, otherwise we just
         # set the setting on this pagination instance
         if opts.cid
-          if ch
+          if ch?
             @userSettings[opts.cid] ?= {}
             @userSettings[opts.cid][k] = v
         else

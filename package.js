@@ -1,7 +1,7 @@
 Package.describe({
   "name": "alethes:pages",
   "summary": "State of the art, out of the box Meteor pagination",
-  "version": "1.7.0",
+  "version": "1.7.2",
   "git": "https://github.com/alethes/meteor-pages"
 });
 
@@ -12,8 +12,11 @@ Package.onUse(function(api){
         "check",
         "tracker",
         "underscore",
-        "coffeescript"
+        "coffeescript",
+        "mongo",
+        "ejson"
     ]);
+    api.use("iron:router@1.0.0", ["client", "server"], { weak: true });
 
     api.use([
         "templating",
@@ -35,12 +38,7 @@ Package.onUse(function(api){
 });
 
 Package.onTest(function(api){
-    api.versionsFrom("METEOR@0.9.4");
     api.use([
-        "meteor-platform",
-        "mongo",
-        "coffeescript",
-        "practicalmeteor:munit@2.1.2",
         "alethes:pages"
     ]);
 
