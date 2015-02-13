@@ -6,7 +6,13 @@
   <a href="/items/">View 1</a>
   <a href="/items2/">View 2</a>
   <a href="/items3/">View 3</a>
+  <a href="/noPages">View without Pager</a>
   {{> yield}}
+</template>
+
+<template name="noPages">
+  <h1>View without Pager</h1>
+  <b>Pages subscriptions are stopped.</b>
 </template>
 
 <template name="items">

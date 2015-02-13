@@ -2,6 +2,7 @@
 @Pages = new Meteor.Pagination Items,
   availableSettings:
     perPage: true
+
 if Meteor.isClient
   Template.items.events
     "click .perPage": (e) ->

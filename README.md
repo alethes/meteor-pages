@@ -123,9 +123,9 @@ Unavailable to the client:
    - a *Mongo.Collection.Cursor* (or some other cursor with a compatible interface) - publishes the cursor.
    - an *Array of Mongo.Collection.Cursor objects* (or some others cursor with a compatible interface) - publishes the cursors.
    When publishing a cursor or an array of cursors, you have to make sure to set *realFilters* (filters used in publication; sometimes different from filters visible to the client) or *nPublishedPages* (explicit number of published pages) manually to ensure proper rendering of navigation controls. In most cases, it's recommended to return an array with filters and options (option 4) instead.
-+ **availableSettings (*Object*, default = {})** - defines rules for changes in settings initiated by the client. A valid entry references the name of a setting by key and has one of the following:
++ **availableSettings (*Object*, default = {})** - defines rules for changes in settings initiated by the client. A valid entry references the name of a setting by key and has one of the following as a value:
    - *true* - allows all changes to the setting (if not otherwise limited by constraints such as `pageSizeLimit`)
-   - a *falsy value* - explicitly disallows or modifications. Has the same effect as leaving the setting out.
+   - a *falsy value* - explicitly disallows all modifications. Has the same effect as leaving the setting out.
    - a *Function* - defines a policy controlling changes in the specified setting.
 + **divWrapper (*String, Boolean*, default = "pageCont")** - if it's specified and table mode is not enabled, the Pagination page is wrapped in a div with the provided class name
 + **fastRender (*Boolean*, default = false)** - determines whether *fast-render* package should be used to speed up page loading
