@@ -72,9 +72,6 @@
       check sub, Match.Where (sub) ->
         sub.connection?.id?
       
-      #More expensive than setting to identical values, causes problems with regular expressions.
-      #return 0 if @valuesEqual(@get(k, sub.connection.id), v)
-      
       if !@availableSettings[k] or (_.isFunction(@availableSettings[k]) and !@availableSettings[k] v, sub)
         @error 4002, "Changing #{k} not allowed."
       
