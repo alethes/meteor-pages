@@ -584,7 +584,7 @@
       
     handle2 = c.observeChanges
       movedBefore: ((sub, id, before) ->
-        at=-1
+        at = -1
         ref = false
         (@Collection.find get "filters",
           sort: get "sort"
@@ -592,12 +592,11 @@
           skip: skip
           limit: get "perPage"
         ).forEach (o, i) =>
-          if !ref and o._id is before
-            ref = true
-            at = i
           if ref
             sub.changed(@id, o._id, _.object([["_#{@id}_i", i + 1]]))
-          
+          else if o._id is before
+            ref = true
+            at = i
         sub.changed(@id, id, _.object([["_#{@id}_i", at]]))
       ).bind @, sub
       
