@@ -551,7 +551,7 @@
     self = @
     
     # We need to call sub's added callback when a new document is added, however
-    # for the purposes of pagination we also need to include the index each document.
+    # for the purposes of pagination we also need to include the index of each document.
     #
     # Furthermore, an added document might increase the index of other documents on this page.
     #
