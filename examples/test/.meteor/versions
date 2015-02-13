@@ -1,4 +1,5 @@
 alethes:pages@1.8.0
+amplify@1.0.0
 application-configuration@1.0.4
 autoupdate@1.1.5
 base64@1.0.2
@@ -23,6 +24,7 @@ insecure@1.0.2
 jquery@1.11.3
 json@1.0.2
 launch-screen@1.0.1
+less@1.0.12
 livedata@1.0.12
 logging@1.0.6
 meteor@1.1.4
@@ -34,6 +36,8 @@ mongo@1.0.11
 mquandalle:jade@0.4.1
 observe-sequence@1.0.4
 ordered-dict@1.0.2
+practicalmeteor:chai@1.9.2_3
+practicalmeteor:loglevel@1.1.0_3
 random@1.0.2
 reactive-dict@1.0.5
 reactive-var@1.0.4
@@ -48,5 +52,12 @@ tracker@1.0.5
 ui@1.0.5
 underscore@1.0.2
 url@1.0.3
+velocity:core@0.4.5
+velocity:html-reporter@0.4.1
+velocity:node-soft-mirror@0.2.8
+velocity:shim@0.1.0
+velocity:test-proxy@0.0.4
 webapp@1.1.6
 webapp-hashing@1.0.2
+xolvio:cucumber@0.3.8
+xolvio:webdriver@0.1.8
