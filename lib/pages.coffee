@@ -67,11 +67,14 @@
       n or 1
     
     "Set": (k, v, sub) ->
+
+      if !@settings[k]?
+        @error 4003, "Invalid option: #{k}."
       check k, String
       check v, @settings[k][1]
       check sub, Match.Where (sub) ->
         sub.connection?.id?
-      
+
       if !@availableSettings[k] or (_.isFunction(@availableSettings[k]) and !@availableSettings[k] v, sub)
         @error 4002, "Changing #{k} not allowed."
       
@@ -266,7 +269,28 @@
     if Meteor.isClient and ch
       @reload()
     ch
-    
+
+  #Converts a regular expression into a query object that can be sent via methods to the server
+
+  sanitizeRegex: (v) ->
+    if _.isRegExp v
+      v = v.toString()
+      lis = v.lastIndexOf("/")
+      v = $regex: v[1 ... lis], $options: v[1 + lis .. ]
+    v
+
+  #Sanitizes all regular expressions within an object using ::sanitizeRegex()
+  
+  sanitizeRegexObj: (obj) ->
+    if _.isRegExp obj
+      return @sanitizeRegex obj
+    for k, v of obj
+      if _.isObject v
+        obj[k] = @sanitizeRegexObj v
+      else if _.isRegExp v
+        obj[k] = @sanitizeRegex v
+    obj
+
   # Sets a specific option
       
   _set: (k, v, opts = {}) ->
@@ -290,6 +314,9 @@
         @[k] = v
             
       if Meteor.isClient and !opts.init
+
+        @sanitizeRegexObj v
+        console.log v
 
         # Change the setting for the corresponding instance on the server
         @call "Set", k, v, (e, r) ->
