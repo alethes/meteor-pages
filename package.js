@@ -6,6 +6,7 @@ Package.describe({
 });
 
 Package.onUse(function(api){
+    api.versionsFrom("METEOR@1.0.3.1")
     api.use([
         "meteor-platform",
         "check",
