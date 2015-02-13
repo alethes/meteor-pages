@@ -5,7 +5,10 @@
     #settingName: [canBeMadeAvailableToTheClient, expectedTypes(s), defaultValue]
     
     dataMargin: [true, Number, 3]
-    divWrapper: [true, Match.Optional(String), "pagesCont"] #If defined, should be a name of the wrapper's CSS classname
+    divWrapper: [true, Match.OneOf(
+      Match.Optional(String)
+      Match.Optional(Boolean)
+    ), "pagesCont"] #If defined, should be a name of the wrapper's CSS classname
     fields: [true, Object, {}]
     filters: [true, Object, {}]
     itemTemplate: [true, String, "_pagesItemDefault"]
