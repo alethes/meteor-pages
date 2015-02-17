@@ -9,4 +9,5 @@ insecure
 coffeescript
 mquandalle:jade
 alethes:pages
-xolvio:cucumber
+xolvio:webdriver@0.2.2
+xolvio:cucumber@0.3.8

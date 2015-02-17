@@ -316,7 +316,7 @@
       if Meteor.isClient and !opts.init
 
         @sanitizeRegexObj v
-        console.log v
+        #console.log v
 
         # Change the setting for the corresponding instance on the server
         @call "Set", k, v, (e, r) ->
@@ -597,6 +597,7 @@
           else if o._id is before
             ref = true
             at = i
+        console.log "pushing #{id} #{at}"
         sub.changed(@id, id, _.object([["_#{@id}_i", at]]))
       ).bind @, sub
       
