@@ -115,6 +115,7 @@ Unavailable to the client:
    - *subscription* - the Meteor subscription object (*this* in *Meteor.publish()*). **In authenticated connections, *subscription.userId* holds the currently signed-in user's *_id*. Otherwise, it's *null*.**
   The authorization function is called in the context of the *Pagination* object.
   The page number is not exposed because it shouldn't be necessary and page-dependent authorization rules would render calculation of the total number of pages ineffective. The total page count is needed for displaying navigation controls properly.
+  
   The authorization function should return one of the following:
    - *true* - grants unrestricted access to the paginated collection
    - a *falsy value* - denies access to the paginated collection
