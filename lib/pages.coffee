@@ -134,7 +134,7 @@
         
     # Publish the collection that we're paginating, taking a page number as a parameter.
         
-    Meteor.publish @name, (page) ->
+    Meteor.publish @id, (page) ->
       self.publish.call self, page, @
   
   # Client initialisation
@@ -453,9 +453,9 @@
       if Meteor.isServer and @fastRender
         self = @
         FastRender.route pr, (params) ->
-          @subscribe self.name, parseInt params.page
+          @subscribe self.id, parseInt params.page
         FastRender.route @homeRoute, ->
-          @subscribe self.name, 1    
+          @subscribe self.id, 1    
   
   setPerPage: ->
     @perPage = if @pageSizeLimit < @perPage then @pageSizeLimit else @perPage
@@ -848,7 +848,7 @@
     #@queue.push page
     @logRequest page
     Meteor.defer ((page) ->
-      @subscriptions[page] = Meteor.subscribe @name, page,
+      @subscriptions[page] = Meteor.subscribe @id, page,
         onReady: ((page) ->
           @onPage page
         ).bind @, page
