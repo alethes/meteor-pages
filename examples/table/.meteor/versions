@@ -26,8 +26,8 @@ iron:core@1.0.7
 iron:dynamic-template@1.0.7
 iron:layout@1.0.7
 iron:location@1.0.7
-iron:middleware-stack@1.0.0
-iron:router@1.0.0
+iron:middleware-stack@1.0.7
+iron:router@1.0.7
 iron:url@1.0.7
 jquery@1.11.3
 json@1.0.2
@@ -37,12 +37,13 @@ localstorage@1.0.2
 logging@1.0.6
 meteor@1.1.4
 meteor-platform@1.2.1
-meteorhacks:fast-render@1.2.1
+meteorhacks:fast-render@2.3.1
+meteorhacks:inject-data@1.2.2
+meteorhacks:picker@1.0.1
 minifiers@1.1.3
 minimongo@1.0.6
 mobile-status-bar@1.0.2
 mongo@1.0.11
-mongo-livedata@1.0.7
 observe-sequence@1.0.4
 ordered-dict@1.0.2
 pinglamb:bootstrap3@3.2.1
