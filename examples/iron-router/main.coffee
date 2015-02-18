@@ -8,6 +8,7 @@
   route: "/items/"
   routerTemplate: "items"
   routerLayout: "layout"
+  sort: id: 1
 
 @Pages2 = new Meteor.Pagination Items,
   router: "iron-router"
@@ -30,6 +31,10 @@
     @set "filters", if route.params.group? then {group: Number route.params.group} else {}
   sort: id: 1
 
+addPaginationOnExisitingRoute = ->
+  @Pages4 = new Meteor.Pagination 
+
+
 # We need to tell the Page controllers to clear their subscriptions when moving to another route.
 #
 # The easiest way to do this is to create a main route controller for all your other routes, and to
@@ -38,9 +43,11 @@
 @MainRouteController = RouteController.extend 
    onBeforeAction: ->
       console.log 'Clearing subscriptions'
+      ###
       Pages.unsubscribe()
       Pages2.unsubscribe()
       Pages3.unsubscribe()
+      ###
       @next()
       
 Router.route '/noPages',

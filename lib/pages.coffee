@@ -67,7 +67,6 @@
       n or 1
     
     "Set": (k, v, sub) ->
-
       if !@settings[k]?
         @error 4003, "Invalid option: #{k}."
       check k, String
@@ -110,7 +109,7 @@
     # Setup
 
     @setCollection collection
-    @set settings, init: true
+    @setInitial settings
     @setDefaults()
     @setRouter()
     @[(if Meteor.isServer then "server" else "client") + "Init"]()
@@ -165,10 +164,11 @@
   unsubscribe: (cb) ->
     @call "Unsubscribe", =>
       delete @initPage
+      @subscriptions = []
       @requested = {}
       @received = {}
       @queue = []
-      cb()  if cb?
+      cb?()
   
   setDefaults: ->
     for k, v of @settings
@@ -234,7 +234,7 @@
   get: (setting, connectionId) ->
     @userSettings[connectionId]?[setting] ? @[setting]
   
- # Sets the options for this instnace
+ # Sets the options for this instance
     
   set: (k, opts...) ->
     ch = 0
@@ -270,6 +270,11 @@
       @reload()
     ch
 
+  setInitial: (settings) ->
+    @setInitDone = false
+    @set settings
+    @setInitDone = true
+
   #Converts a regular expression into a query object that can be sent via methods to the server
 
   sanitizeRegex: (v) ->
@@ -285,10 +290,10 @@
     if _.isRegExp obj
       return @sanitizeRegex obj
     for k, v of obj
-      if _.isObject v
-        obj[k] = @sanitizeRegexObj v
-      else if _.isRegExp v
+      if _.isRegExp v
         obj[k] = @sanitizeRegex v
+      else if "object" is typeof v
+        obj[k] = @sanitizeRegexObj v
     obj
 
   # Sets a specific option
@@ -306,24 +311,23 @@
       if @settings[k]?[1]? and @settings[k]?[1] isnt true
         check v, @settings[k][1]
       
+      @sanitizeRegexObj v
+      
       # Set the parameter on this instance (client)  
       
-      oldV = @get(k, opts?.cid)
+      oldV = @get k, opts?.cid
+
+      return 0  if @valuesEqual v, oldV
+
       if Meteor.isClient
-        ch = 1
         @[k] = v
-            
-      if Meteor.isClient and !opts.init
-
-        @sanitizeRegexObj v
-        #console.log v
-
-        # Change the setting for the corresponding instance on the server
-        @call "Set", k, v, (e, r) ->
-          if e
-            @[k] = oldV
-            return @onDeniedSetting.call @, k, v, e
-          opts.cb? ch
+        if @setInitDone
+          # Change the setting for the corresponding instance on the server
+          @call "Set", k, v, (e, r) ->
+            if e
+              @[k] = oldV
+              return @onDeniedSetting.call @, k, v, e
+            opts.cb? ch
       else
         # When there's a connection id we store this setting on a per-connection basis, otherwise we just
         # set the setting on this pagination instance
@@ -340,7 +344,10 @@
     ch
     
   valuesEqual: (v1, v2) ->
-    EJSON.equals(v1, v2) or (_.isFunction(v1) and _.isFunction(v2) and v1.toString() is v2.toString())
+    if _.isFunction v1
+      _.isFunction(v2) and v1.toString() is v2.toString()
+    else
+      _.isEqual v1, v2
   
   # 
   
@@ -597,7 +604,6 @@
           else if o._id is before
             ref = true
             at = i
-        console.log "pushing #{id} #{at}"
         sub.changed(@id, id, _.object([["_#{@id}_i", at]]))
       ).bind @, sub
       
@@ -706,7 +712,7 @@
   
   onNavClick: (n) ->
     if n <= @sess("totalPages") and n > 0
-      Deps.nonreactive =>
+      Tracker.nonreactive =>
         cp = @sess "currentPage"
         if @received[cp]
           @sess "oldPage", cp
