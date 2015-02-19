@@ -576,7 +576,7 @@
             # Add to @PaginatedCollection
             
             sub.added(@id, id, doc)
-            (@Collection.find get "filters",
+            (@Collection.find get("filters"),
               sort: get "sort"
               fields: get "fields"
               skip: skip
@@ -593,7 +593,7 @@
       movedBefore: ((sub, id, before) ->
         at = -1
         ref = false
-        (@Collection.find get "filters",
+        (@Collection.find get("filters"),
           sort: get "sort"
           fields: get "fields"
           skip: skip
