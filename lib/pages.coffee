@@ -300,7 +300,7 @@
       
   _set: (k, v, opts = {}) ->
     check k, String
-    ch = 0
+    ch = 1
     
     # Check that we're the server, or that we're being initialised, or that this setting can be changed
     # after initialization, or that the setting doesn't yet exist on this instance.
