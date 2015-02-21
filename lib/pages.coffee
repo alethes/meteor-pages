@@ -86,13 +86,12 @@
       changes
     
     "Unsubscribe": ->
-      subs = []
-      for i, k in @subscriptions
-        if i.connection.id is arguments[arguments.length - 1].connection.id
-          i.stop()
-        else
-          subs.push i
-      @subscriptions = subs
+      cid = arguments[arguments.length - 1].connection.id
+      subs = {}
+      for k, sub of @subscriptions
+        if sub.connection.id is cid
+          sub.stop()
+          delete @subscriptions[k]
       true
   
   constructor: (collection, settings = {}) ->
@@ -102,7 +101,8 @@
     # Instance variables
     
     @init = true
-    @subscriptions = []
+    @debug ?= (PAGES_DEBUG? and PAGES_DEBUG) or process?.env.PAGES_DEBUG
+    @subscriptions = {}
     @userSettings = {}
     @_currentPage = 1
 
@@ -153,22 +153,23 @@
   #
   
   reload: ->
-    @unsubscribe =>
-      @call "CountPages", (e, total) =>
-        @sess "totalPages", total
-        p = @currentPage()
-        p = 1  if (not p?) or @resetOnReload or p > total
-        @sess "currentPage", false
-        @sess "currentPage", p
+    @unsubscribe()
+    @call "CountPages", (e, total) =>
+      @sess "totalPages", total
+      p = @currentPage()
+      p = 1  if (not p?) or @resetOnReload or p > total
+      @sess "currentPage", false
+      @sess "currentPage", p
   
   unsubscribe: (cb) ->
-    @call "Unsubscribe", =>
-      delete @initPage
-      @subscriptions = []
-      @requested = {}
-      @received = {}
-      @queue = []
-      cb?()
+    for k, sub of @subscriptions
+      sub.stop()
+      delete @subscriptions[k]
+    @initPage = null
+    @requested = {}
+    @received = {}
+    @queue = []
+    true
   
   setDefaults: ->
     for k, v of @settings
@@ -389,8 +390,7 @@
     
     # Create a collection based on the instance's unique id
     
-    console.log "creating #{@id} collection"
-    @PaginatedCollection = new Mongo.Collection @id
+    #@PaginatedCollection = new Mongo.Collection @id
   
   linkTo: (page)->
     if Router.current()?.params
@@ -499,7 +499,7 @@
       @sess "currentPage", 1
 
   
-  # Called from the Meteor.publish call made during init, this Publishes the paginated collection
+  # Called from the Meteor.publish call made during init, this publishes the paginated collection
   #
   # "this" will be the pagination instance
   # "page" is the page number to publish
@@ -560,6 +560,8 @@
     
     c ?= @Collection.find filters, options
     
+    #watchCollection: ->
+    #c = @Collection.find()
     init = true
     self = @
     
@@ -571,7 +573,8 @@
     # We therefore need to use the observe method to handle this.
     
     handle = c.observe
-      addedAt: ((sub, doc, at) ->
+      addedAt: _.bind ((sub, doc, at) ->
+        #@log "#{doc.id} added at #{page}, #{at}"
         try
           doc["_#{@id}_p"] = page
           doc["_#{@id}_i"] = at
@@ -579,9 +582,9 @@
           delete doc._id
           unless init
             
-            # Add to @PaginatedCollection
+            # Add to @Collection
             
-            sub.added(@id, id, doc)
+            sub.added @Collection._name, id, doc
             (@Collection.find get("filters"),
               sort: get "sort"
               fields: get "fields"
@@ -589,14 +592,15 @@
               limit: get "perPage"
             ).forEach (o, i) =>
               if i >= at
-                sub.changed(@id, o._id, _.object([["_#{@id}_i", i + 1]]))
+                sub.changed @Collection._name, o._id, _.object [["_#{@id}_i", i + 1]]
         catch e
-      ).bind @, sub
+      ), @, sub
     
     # For the other cases the more efficient observeChanges will suffice...
       
     handle2 = c.observeChanges
-      movedBefore: ((sub, id, before) ->
+      movedBefore: _.bind ((sub, id, before) ->
+        #@log "#{id} moved before #{before}"
         at = -1
         ref = false
         (@Collection.find get("filters"),
@@ -606,42 +610,46 @@
           limit: get "perPage"
         ).forEach (o, i) =>
           if ref
-            sub.changed(@id, o._id, _.object([["_#{@id}_i", i + 1]]))
+            sub.changed @Collection._name, o._id, _.object [["_#{@id}_i", i + 1]]
           else if o._id is before
             ref = true
             at = i
-        sub.changed(@id, id, _.object([["_#{@id}_i", at]]))
-      ).bind @, sub
+        sub.changed @Collection._name, id, _.object [["_#{@id}_i", at]]
+      ), @, sub
       
-      changed: ((sub, id, fields) ->
+      changed: _.bind ((sub, id, fields) ->
+        #@log "#{id} changed"
         try
-          sub.changed @id, id, fields
+          sub.changed @Collection._name, id, fields
         catch e
-      ).bind @, sub
+      ), @, sub
       
-      removed: ((sub, id) ->
+      removed: _.bind ((sub, id) ->
+        #@log "#{id} removed"
         try
-          sub.removed @id, id
+          sub.removed @Collection._name, id
         catch e
-      ).bind @, sub
+      ), @, sub
     
     # Add the documents from this query 
     
     n = 0
-    c.forEach ((doc, index, cursor) ->
+    c.forEach (doc, index, cursor) =>
       n++
       doc["_#{@id}_p"] = page
       doc["_#{@id}_i"] = index
-      sub.added @id, doc._id, doc
-    ).bind @
+      sub.added @Collection._name, doc._id, doc
     
     init = false
-    sub.onStop ->
+    sub.onStop _.bind ((page) ->
+      #@log "#{sub.connection.id}: page #{page} subscription stopped"
+      delete @subscriptions[sub.connection.id][page]
       handle.stop()
       handle2.stop()
-    @ready()
-    @subscriptions.push sub
-    c
+    ), @, page
+    @subscriptions[sub.connection.id] ?= {}
+    @subscriptions[sub.connection.id][page] = sub
+    sub.ready()
   
   # Sets the state of the current page as "loading" (ready = false)  
   
@@ -653,7 +661,7 @@
     (new Date()).getTime()
   
   log: (msg) ->
-    console.log "#{@name} #{msg}"
+    @debug and console.log "Pages: #{@name} -", msg
   
   logRequest: (p) ->
     @timeLastRequest = @now()
@@ -816,18 +824,18 @@
       # The contents will be updated (as will the page) as data arrives from the server
       
       if @infinite
-        n = @PaginatedCollection.find({},
+        n = @Collection.find({},
           fields: @fields
           sort: @sort
         ).count()
-        c = @PaginatedCollection.find({},
+        c = @Collection.find({},
           fields: @fields
           sort: @sort
           skip: if @infiniteItemsLimit isnt Infinity and n > @infiniteItemsLimit then n - @infiniteItemsLimit else 0
           limit: @infiniteItemsLimit
         )
       else
-        c = @PaginatedCollection.find(
+        c = @Collection.find(
           _.object([
             ["_#{@id}_p", page]
           ]),
@@ -854,6 +862,7 @@
     #@queue.push page
     @logRequest page
     Meteor.defer _.bind ((page) ->
+      #@log "subscribing to page #{page}"
       @subscriptions[page] = Meteor.subscribe @id, page,
         onReady: ((page) ->
           @onPage page
