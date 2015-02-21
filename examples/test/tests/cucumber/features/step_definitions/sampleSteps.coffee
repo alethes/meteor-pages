@@ -42,7 +42,7 @@ module.exports = ->
       .call(callback)
   @When /^(?:Pages|Pagination) is ready$/, (callback) ->
     helper.world.browser
-      .timeoutsAsyncScript 10000
+      .timeoutsAsyncScript 20000
       .executeAsync (done) ->
         Tracker.autorun ->
           if Pages? and Pages.sess "ready"

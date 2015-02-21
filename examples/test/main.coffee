@@ -1,8 +1,5 @@
-if Meteor.isClient
-  global = window
-else
-  global = @
-global.Pages = new Meteor.Pagination Items,
+@Pages = new Meteor.Pagination Items,
+  auth: -> false
   #perPage: 10
   #infinite: true
   sort:

@@ -491,10 +491,6 @@
           @sess "currentPage", 1
       ).bind(@)
     , 500
-    
-  publishNone: ->
-    @ready()
-    return @Collection.find null
   
   # Called from the Meteor.publish call made during init, this Publishes the paginated collection
   #
@@ -535,10 +531,13 @@
       r = @auth.call @, skip, sub
       if !r
         set "nPublishedPages", 0
-        return @publishNone()
+        sub.ready()
+        return @ready()
       else if _.isNumber r
         set "nPublishedPages", r
-        return @publishNone()  if page > r
+        if page > r
+          sub.ready()
+          return @ready()
       else if _.isArray(r) and r.length is 2
         if _.isFunction r[0].fetch
           c = r
