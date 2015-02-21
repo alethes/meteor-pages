@@ -1,5 +1,4 @@
 @Pages = new Meteor.Pagination Items,
-  auth: -> false
   #perPage: 10
   #infinite: true
   sort:

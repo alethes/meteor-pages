@@ -153,7 +153,9 @@ Examples
 
 Currently, the following examples are available in the */examples* directory:
 
-+ *basic* - the most straightforward way of using *Pages*. The default item template simply lists each item's attributes.
++ *basic* - the most straightforward way of using *Pages*. The default item template simply lists the attributes of each item.
+
++ *changePerPage* - basic usage with two buttons enabling immediate changes to the "perPage" setting
 
 + *infinite* - infinite scrolling
 
