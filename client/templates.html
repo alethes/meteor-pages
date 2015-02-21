@@ -62,7 +62,7 @@
   {{#if show}}
     <div style="text-align:center" data-pages="{{name}}" class="pagination-cont">
       <ul class="pagination">
-      {{#each paginationNeighbors}}
+      {{#each navigationNeighbors}}
         <li class="{{active}} {{disabled}}">
           <a href="{{link}}">{{p}}</a>
         </li>
@@ -72,7 +72,9 @@
   {{/if}}
 </template>
 <template name="_pagesItemDefault">
-  <div class="pagesItemDefault">{{#each properties}}
-    <div><i>{{name}}</i>: {{value}}</div>{{/each}}
+  <div class="pagesItemDefault">
+  {{#each properties}}
+    <div><i>{{name}}</i>: {{value}}</div>
+  {{/each}}
   </div>
 </template>

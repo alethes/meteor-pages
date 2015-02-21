@@ -89,7 +89,7 @@ Pages.set
 ```
 
 Available to the client:
-+ **dataMargin (*Number*, default = 3)** - determines how many neighboring pages on each side should be prefetched for seamless transition after loading the current page.
++ **dataMargin (*Number*, default = 3)** - determines how many neighboring pages on each side should be prefetched for seamless transition after loading the current page. Prefetching stops when the subscription limit (imposed by **maxSubscriptions**) is reached.
 + **filters (*Object*, default = {})** - MongoDB find query object, eg. `{name: {$lt: 5}}`
 + **itemTemplate (*String*, default = "paginateItemDefault")** - name of the template to use for items. The default template simply lists all attributes of an item
 + **navShowEdges (*Boolean*, default = false)** - whether to show the links to the edge pages («) in the navigation panel. If true, overrides *navShowFirst* and *navShowLast*.
@@ -135,6 +135,7 @@ Unavailable to the client:
 + **infiniteItemsLimit (*Number*, default = Infinity)** - the maximum number of items to display at once in infinite scrolling mode. If the number (n) is less then Infinity only the last n items are displayed on the page.
 + **infiniteRateLimit (*Number*, default = 1)** - determines the minimum interval (in seconds) between subsequent page changes in infinite scrolling mode
 + **infiniteTrigger (*Number*, default = .8)** - if infinite scrolling is used, determines how far (for val > 1: in pixels, for 0 > val >= 1: in (1 - percent)) from the bottom of the page should the new data portion be requested
++ **maxSubscriptions (*Number*, default = 100)** - the maximum number of simultaneously active subscriptions per client. Normally, open pages and,if **dataMargin** is greater than one, their neighbors are cached on the client-side for seamless transitions. To achieve this, multiple subscriptions (each keeping track of a single page) are held open at the same time. This prevents clients from requesting the same page several times as the user navigates back and forth within the paginated set. This lowers the amount of data sent over the wire and decreases server load for mostly static data. However, each addition to, or removal from the set (along with some of the modifications) trigger a cascade of changes in the active subscriptions. In addition, a very high number of simultaneous subscriptions may overload the memory on both the server and the client side. To prevent that, a `Pagination` instance can keep track of the number of active subscriptions and securely limit them behind the scenes. Each `Pagination` instance has a separate subscription limit.
 + **navTemplate (*String*, default = "_pagesNav")** - name of the template used for displaying the pagination navigation
 + **onDeniedSetting (*Function*, logs "Changing {{setting}} not allowed." to console by default)** - called when the setting is unavailable to the client (based on the rules defined in #availableSettings() or lack thereof).
 + **pageTemplate (*String*, default = "_pagesPage")** - name of the template used for displaying a page of items
