@@ -11,6 +11,3 @@ global.Pages = new Meteor.Pagination Items,
     filters: true
     sort: -> true
     perPage: true
-Tracker.autorun ->
-  s = Pages.sess "ready"
-  console.log s
