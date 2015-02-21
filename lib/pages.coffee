@@ -389,6 +389,7 @@
     
     # Create a collection based on the instance's unique id
     
+    console.log "creating #{@id} collection"
     @PaginatedCollection = new Mongo.Collection @id
   
   linkTo: (page)->
@@ -485,12 +486,18 @@
   # Get the number of pages from the server
       
   countPages: _.throttle ->
-      @call "CountPages", ((e, r) ->
-        @sess "totalPages", r
-        if @sess("currentPage") > r
-          @sess "currentPage", 1
-      ).bind(@)
-    , 500
+    if !Meteor.status().connected and Package["ground:db"]?
+      @setTotalPages Math.ceil(@Collection.find().count() / @perPage)
+    else
+      @call "CountPages", (e, r) =>
+        @setTotalPages r
+  , 500
+
+  setTotalPages: (n) ->
+    @sess "totalPages", n
+    if @sess("currentPage") > n
+      @sess "currentPage", 1
+
   
   # Called from the Meteor.publish call made during init, this Publishes the paginated collection
   #
@@ -846,14 +853,14 @@
     #@clearQueue()  if page is @currentPage()
     #@queue.push page
     @logRequest page
-    Meteor.defer ((page) ->
+    Meteor.defer _.bind ((page) ->
       @subscriptions[page] = Meteor.subscribe @id, page,
         onReady: ((page) ->
           @onPage page
         ).bind @, page
         onError: (e) =>
           @error e.message
-    ).bind @, page
+    ), @, page
   
   # Called when a page has been received
   
