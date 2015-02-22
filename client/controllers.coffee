@@ -32,10 +32,6 @@ Template._pagesPage.helpers
   ready: ->
     @sess "ready"
   items: ->
-    if @infinite
-      setTimeout =>
-        @blockScrolling = false
-      , 100
     if @init
       @checkInitPage()
     cp = @sess "currentPage"

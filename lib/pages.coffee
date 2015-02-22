@@ -36,9 +36,10 @@
     infiniteTrigger: [false, Number, .9]
     infiniteRateLimit: [false, Number, 1]
     initPage: [false, Number, 1]
-    maxSubscriptions: [false, Number, 100]
+    maxSubscriptions: [false, Number, 20]
     navTemplate: [false, String, "_pagesNavCont"]
     onDeniedSetting: [false, Function, (k, v, e) -> console?.log "Changing #{k} not allowed."]
+    pageCountFrequency: [false, Number, 10000]
     pageSizeLimit: [false, Number, 60]
     pageTemplate: [false, String, "_pagesPageCont"]
     rateLimit: [false, Number, 1]
@@ -147,6 +148,7 @@
     @requested = {}
     @received = {}
     @queue = []
+    @nextPageCount = @now()
     @groundDB = Package["ground:db"]?
     if @maxSubscriptions < 1
       @maxSubscriptions = 1
@@ -486,7 +488,10 @@
         FastRender.route pr, (params) ->
           @subscribe self.id, parseInt params.page
         FastRender.route @homeRoute, ->
-          @subscribe self.id, 1    
+          @subscribe self.id, 1  
+
+  isEmpty: ->
+    @isReady() and @Collection.find(_.object [["_#{@id}_i", 0]]).count() is 0
   
   setPerPage: ->
     @perPage = if @pageSizeLimit < @perPage then @pageSizeLimit else @perPage
@@ -516,6 +521,7 @@
   # Get the number of pages from the server
       
   countPages: _.throttle (cb) ->
+    #@log "Counting pages"
     if !Meteor.status().connected and Package["ground:db"]?
       n = @Collection.findOne({}, {sort: _.object [["_#{@id}_p", -1]]})?["_#{@id}_p"] or 0
       @setTotalPages n
@@ -524,8 +530,12 @@
       @call "CountPages", (e, r) =>
         throw e  if e?
         @setTotalPages r
+        now = @now()
+        if @nextPageCount < now
+          @nextPageCount = now + @pageCountFrequency
+          setTimeout _.bind(@countPages, @), @pageCountFrequency
         cb? r
-  , 500
+  , 1000
 
   setTotalPages: (n) ->
     @sess "totalPages", n
@@ -659,18 +669,18 @@
       
       changed: _.bind ((sub, query, id, fields) ->
         #@log "#{id} changed"
-        #try
-        sub.changed @Collection._name, id, fields
-        #catch e
+        try
+          sub.changed @Collection._name, id, fields
+        catch e
       ), @, sub, query
       
       removed: _.bind ((sub, query, id) ->
         #@log "#{id} removed"
-        #try
-        sub.removed @Collection._name, id
-        query().forEach (o, i) =>
-          sub.changed @Collection._name, o._id, _.object [["_#{@id}_i", i]]
-        #catch e
+        try
+          sub.removed @Collection._name, id
+          query().forEach (o, i) =>
+            sub.changed @Collection._name, o._id, _.object [["_#{@id}_i", i]]
+        catch e
       ), @, sub, query
     
     # Add the documents from this query 
@@ -781,20 +791,22 @@
       @sess "currentPage", n
   
   setInfiniteTrigger: ->
-    $(window).scroll (_.throttle ->
-      t = @infiniteTrigger
-      oh = document.body.offsetHeight
-      if t > 1
-        l = oh - t
-      else if t > 0
-        l = oh * t
-      else
-        return
-      if (window.innerHeight + window.scrollY) >= l
-        if @lastPage < @sess "totalPages"
-          @sess("currentPage", @lastPage + 1)
-    , @infiniteRateLimit * 1000
-    ).bind @
+    $(window).scroll _.bind (
+      _.throttle ->
+        t = @infiniteTrigger
+        oh = document.body.offsetHeight
+        if t > 1
+          l = oh - t
+        else if t > 0
+          l = oh * t
+        else
+          return
+        if (window.innerHeight + window.scrollY) >= l
+          if @lastPage < @sess "totalPages"
+            console.log "i want page #{@lastPage + 1}"
+            @sess("currentPage", @lastPage + 1)
+      , @infiniteRateLimit * 1000
+    ), @
   
   checkQueue: _.throttle ->
     #@log "Checking queue"
@@ -900,6 +912,11 @@
           added: =>
             @countPages()
           removed: =>
+            ##########
+            ##########
+            ### !! ###
+            ##########
+            ##########
             @requestPage @sess "currentPage"
             @countPages()
       
@@ -909,7 +926,7 @@
   
   requestPage: (page) ->
     return  if !page or @requested[page] or @received[page]
-    #@log "Requesting page #{page}"
+    @log "Requesting page #{page}"
     @logRequest page
     if !Meteor.status().connected and @groundDB
       if @Collection.findOne(_.object [["_#{@id}_p", page]])
@@ -947,7 +964,7 @@
   # Called when a page has been received
   
   onPage: (page) ->
-    #@log "Received page #{page}"
+    @log "Received page #{page}"
     @beforeFirstReady = false
     @logResponse page
     @ready page

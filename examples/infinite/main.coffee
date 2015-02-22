@@ -1,14 +1,19 @@
 #Uses the Items collection object previously defined in testdata.coffee
 @Pages = new Meteor.Pagination Items,
+  debug: true
   availableSettings:
     sort: true
   infinite: true
+  infiniteTrigger: .9
+  infiniteRateLimit: 1
   itemTemplate: "item"
   pageSizeLimit: 1000
-  perPage: 50
+  perPage: 10
+  dataMargin: 0
   router: "iron-router"
   sort:
     id: 1
+
 if Meteor.isClient
   @colors = []
   signs = "0123456789abcdef"
@@ -20,3 +25,5 @@ if Meteor.isClient
           c += signs[Math.floor(Math.random() * signs.length)]
         colors[@id] = c
       colors[@id]
+  #Template.item.rendered = ->
+  #  console.log "rendered #{@data.id}"
