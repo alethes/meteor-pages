@@ -44,7 +44,7 @@ Template._pagesPage.helpers
     if 0 is @sess "totalPages"
       @ready true
       return []
-    if @received[cp] or (@fastRender and cp is @initPage)
+    if @received[cp] or ((@fastRender or @groundDB) and cp is @initPage)
       @ready true
       n = cp
     else

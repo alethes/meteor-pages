@@ -35,6 +35,7 @@
     infiniteItemsLimit: [false, Number, Infinity]
     infiniteTrigger: [false, Number, .9]
     infiniteRateLimit: [false, Number, 1]
+    initPage: [false, Number, 1]
     maxSubscriptions: [false, Number, 100]
     navTemplate: [false, String, "_pagesNavCont"]
     onDeniedSetting: [false, Function, (k, v, e) -> console?.log "Changing #{k} not allowed."]
@@ -103,7 +104,7 @@
     
     # Instance variables
     
-    @init = true
+    @init = @beforeFirstReady = true
     @debug ?= (PAGES_DEBUG? and PAGES_DEBUG) or process?.env.PAGES_DEBUG
     @subscriptions = length: 0, order: []
     @userSettings = {}
@@ -146,27 +147,33 @@
     @requested = {}
     @received = {}
     @queue = []
+    @groundDB = Package["ground:db"]?
     if @maxSubscriptions < 1
       @maxSubscriptions = 1
     @setTemplates()
-    @countPages()
     Tracker.autorun =>
+      #@log "Status changed"
+      Meteor.status()
       Meteor.userId?()
+      @countPages()
       @reload()
     @setInfiniteTrigger()  if @infinite
   
   #Stops all subscriptions and reloads the current page, provided it's available and @resetOnReload isn't true.
   
-  reload: ->
+  reload: _.throttle ->
+    #@log "Reloading"
     @unsubscribe()
-    @call "CountPages", (e, total) =>
-      @sess "totalPages", total
+    @countPages (total) =>
       p = @currentPage()
       p = 1  if (not p?) or @resetOnReload or p > total
       @sess "currentPage", false
       @sess "currentPage", p
+  , 1000, trailing: false
   
   unsubscribe: (page, cid) ->
+    return  if @beforeFirstReady
+    #@log "Unsubscribing #{page} #{cid}"
     if !page?
       for k, sub of @subscriptions
         continue  if k in ["length", "order"]
@@ -195,7 +202,8 @@
   
   setDefaults: ->
     for k, v of @settings
-      @[k] ?= v[2]  if v[2]?
+      if v[2]?
+        @[k] ?= v[2]
   
   syncSettings: (cb) ->
     S = {}
@@ -214,7 +222,7 @@
         ->
           arg = (v for k, v of arguments)
           arg.push @
-          @get = ((self, k) -> self.get k, @connection.id).bind @, self
+          @get = _.bind ((self, k) -> self.get k, @connection.id), @, self
           r = f.apply self, arg
           r
       )(f)
@@ -507,12 +515,16 @@
   
   # Get the number of pages from the server
       
-  countPages: _.throttle ->
+  countPages: _.throttle (cb) ->
     if !Meteor.status().connected and Package["ground:db"]?
-      @setTotalPages Math.ceil(@Collection.find().count() / @perPage)
+      n = @Collection.findOne({}, {sort: _.object [["_#{@id}_p", -1]]})?["_#{@id}_p"] or 0
+      @setTotalPages n
+      cb? n
     else
       @call "CountPages", (e, r) =>
+        throw e  if e?
         @setTotalPages r
+        cb? r
   , 500
 
   setTotalPages: (n) ->
@@ -543,11 +555,14 @@
     check sub, Match.Where (s) ->
       s.ready?
     cid = sub.connection.id
+    init = true
+
+    #@log "Publishing page #{page}"
 
     @subscriptions[sub.connection.id] ?= length: 0
 
     @enforceSubscriptionLimit cid
-    
+
     # Create get and set functions for this specific connection (the settings will end up in the @userSettings,
     # stored in an object indexed under the collection id)
     
@@ -598,13 +613,13 @@
         set "realFilters", filters
       
       # Get a cursor to the base collection
-      
+      #@log "Publishing", filters, options
       c or @Collection.find filters, options
     
     ), @, sub, get, set
 
     c = query()
-    
+
     #watchCollection: ->
     #c = @Collection.find()
     
@@ -619,19 +634,18 @@
     
     handle = c.observe
       addedAt: _.bind ((sub, query, doc, at) ->
+        return  if init
         #@log "#{doc.id} added at #{page}, #{at}"
-        try
-          doc["_#{@id}_p"] = page
-          doc["_#{@id}_i"] = at
-          id = doc._id
-          delete doc._id  
-          # Add to @Collection
-          query().forEach (o, i) =>
-            if i is at
-              sub.added @Collection._name, id, doc
-            else
-              sub.changed @Collection._name, o._id, _.object [["_#{@id}_i", i]]
-        catch e
+        doc["_#{@id}_p"] = page
+        doc["_#{@id}_i"] = at
+        id = doc._id
+        delete doc._id  
+        # Add to @Collection
+        query().forEach (o, i) =>
+          if i is at
+            sub.added @Collection._name, id, doc
+          else
+            sub.changed @Collection._name, o._id, _.object [["_#{@id}_i", i]]
       ), @, sub, query
     
     # For the other cases the more efficient observeChanges will suffice...
@@ -645,30 +659,30 @@
       
       changed: _.bind ((sub, query, id, fields) ->
         #@log "#{id} changed"
-        try
-          sub.changed @Collection._name, id, fields
-        catch e
+        #try
+        sub.changed @Collection._name, id, fields
+        #catch e
       ), @, sub, query
       
       removed: _.bind ((sub, query, id) ->
         #@log "#{id} removed"
-        try
-          sub.removed @Collection._name, id
-          query().forEach (o, i) =>
-            sub.changed @Collection._name, o._id, _.object [["_#{@id}_i", i]]
-        catch e
+        #try
+        sub.removed @Collection._name, id
+        query().forEach (o, i) =>
+          sub.changed @Collection._name, o._id, _.object [["_#{@id}_i", i]]
+        #catch e
       ), @, sub, query
     
     # Add the documents from this query 
     
-    ###
     n = 0
     c.forEach (doc, index, cursor) =>
       n++
       doc["_#{@id}_p"] = page
       doc["_#{@id}_i"] = index
       sub.added @Collection._name, doc._id, doc
-    ###
+
+    init = false
 
     sub.onStop _.bind ((page) ->
       #@log "#{sub.connection.id}: page #{page} subscription stopped"
@@ -690,8 +704,11 @@
   now: ->
     (new Date()).getTime()
   
-  log: (msg) ->
-    @debug and console.log "Pages: #{@name} -", msg
+  log: ->
+    a = ["Pages: #{@name} -"]
+    for i in arguments
+      a.push i
+    @debug and console.log.apply console, a
   
   logRequest: (p) ->
     @timeLastRequest = @now()
@@ -709,8 +726,8 @@
     n = []
     if @dataMargin is 0 or @maxSubscriptions < 2
       return n
-    margin = Math.floor((@maxSubscriptions - 1) / 2)
-    for d in [1 .. margin]
+    maxMargin = Math.floor((@maxSubscriptions - 1) / 2)
+    for d in [1 .. _.min [maxMargin, @dataMargin]]
       np = page + d
       if np <= @sess "totalPages"
         n.push np
@@ -721,7 +738,7 @@
   
   queueNeighbors: (page) ->
     for p in @neighbors page
-      @queue.push p  if !@received[p] and !@requested[p]
+      @queue.push p  if !@received[p] and !@requested[p] and p not in @queue
   
   paginationNavItem: (label, page, disabled, active = false) ->
     p: label
@@ -780,6 +797,7 @@
     ).bind @
   
   checkQueue: _.throttle ->
+    #@log "Checking queue"
     cp = @currentPage()
     neighbors = @neighbors cp
     
@@ -787,6 +805,7 @@
     # and get the current page
     
     if !@received[cp]
+      #@log "Haven't yet received the current page (#{cp})."
       @clearQueue()
       @requestPage cp
       cp = String cp
@@ -801,9 +820,11 @@
     # If we do have the current page then queue the neighbours
     
     else if @queue.length
+      #@log "Current page (#{cp}) already received."
       while @queue.length > 0
         i = @queue.shift()
         if i in neighbors
+          #@log neighbors
           @requestPage i
           break
   , 500
@@ -822,23 +843,22 @@
       @sess "ready", true
   
   checkInitPage: ->
-    if @init 
+    if @init and !@initPage 
       if @router
         Router.current()?.route?.getName()
         try
           @initPage = parseInt(Router.current().route.params(location.href)?.page) or 1
-          @init = false
         catch
           return
       else
         @initPage = 1
-        @init = false    
+    @init = false
     @sess "oldPage", @initPage
     @sess "currentPage", @initPage
   
   getPage: (page) ->
     if Meteor.isClient
-      page = @currentPage()  unless page?
+      page = @currentPage()  if !page?
       page = parseInt page
       return  if page is NaN
       total = @sess "totalPages"
@@ -880,6 +900,7 @@
           added: =>
             @countPages()
           removed: =>
+            @requestPage @sess "currentPage"
             @countPages()
       
       c.fetch()
@@ -887,38 +908,47 @@
   # Subscribes to the given page
   
   requestPage: (page) ->
-    #if page not in @received
-    #  @loading page
     return  if !page or @requested[page] or @received[page]
-    #@clearQueue()  if page is @currentPage()
-    #@queue.push page
+    #@log "Requesting page #{page}"
     @logRequest page
-    @enforceSubscriptionLimit()
-    Meteor.defer _.bind ((page) ->
-      #@log "subscribing to page #{page}"
-      @subscriptions[page] = Meteor.subscribe @id, page,
-        onReady: ((page) ->
-          @onPage page
-        ).bind @, page
-        onError: (e) =>
-          if e.error is "subscription-limit-reached"
-            setTimeout (_.bind (page) ->
-              if @currentPage() is page and !@received[page]
-                @enforceSubscriptionLimit()
-                delete @requested[page]
-                @requestPage page
-            , @, page)
-            , 500
-          else
-            @error e.message
-      @subscriptions.order.push page
-      @subscriptions.length++
-      #@log "Number of subscriptions: #{@subscriptions.length}"
-    ), @, page
+    if !Meteor.status().connected and @groundDB
+      if @Collection.findOne(_.object [["_#{@id}_p", page]])
+        @onPage page
+      else
+        setTimeout (_.bind (page) ->
+          if @currentPage() is page and !@received[page]
+            delete @requested[page]
+            @requestPage page
+        , @, page)
+        , 500
+    else
+      @enforceSubscriptionLimit()
+      Meteor.defer _.bind ((page) ->
+        #@log "subscribing to page #{page}"
+        @subscriptions[page] = Meteor.subscribe @id, page,
+          onReady: _.bind (page) ->
+            @onPage page
+          , @, page
+          onError: (e) =>
+            if e.error is "subscription-limit-reached"
+              setTimeout (_.bind (page) ->
+                if @currentPage() is page and !@received[page]
+                  delete @requested[page]
+                  @requestPage page
+              , @, page)
+              , 500
+            else
+              @error e.message
+        @subscriptions.order.push page
+        @subscriptions.length++
+        #@log "Number of subscriptions: #{@subscriptions.length}"
+      ), @, page
   
   # Called when a page has been received
   
   onPage: (page) ->
+    #@log "Received page #{page}"
+    @beforeFirstReady = false
     @logResponse page
     @ready page
     if @infinite

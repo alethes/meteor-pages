@@ -1,7 +1,5 @@
 #Creates a Collection object and generates test data for it.
 #Runs before main.coffee
-if Meteor.isClient
-  Meteor.disconnect()
 @Items = new Ground.Collection "items"
 N = 1000
 if Meteor.isServer and @Items.find().count() isnt N
