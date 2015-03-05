@@ -202,7 +202,7 @@
       delete @subscriptions[page]
       delete @requested[page]
       delete @received[page]
-      @subscriptions.order = _.without @subscriptions.order, page
+      @subscriptions.order = _.without @subscriptions.order, Number page
       @subscriptions.length--
     true
   

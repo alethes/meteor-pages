@@ -6,6 +6,7 @@
   dataMargin: 1
   groundDB: true
   initPage: 5
+  perPage: 2
 
 if Meteor.isClient
   Template.body.helpers

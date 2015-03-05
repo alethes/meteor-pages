@@ -6,4 +6,5 @@
 meteor-platform
 coffeescript
 alethes:pages
+appcache
 ground:db
