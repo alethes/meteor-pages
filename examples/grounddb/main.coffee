@@ -1,13 +1,11 @@
 #Uses the Items collection object previously defined in testdata.coffee
 @Pages = new Meteor.Pagination Items,
-  debug: true
-  dataMargin: 1
-  initPage: 5
   availableSettings:
     filters: true
-  auth: ->
-    console.log @userId
-    Items.find id: 1
+  debug: true
+  dataMargin: 1
+  groundDB: true
+  initPage: 5
 
 if Meteor.isClient
   Template.body.helpers

@@ -35,6 +35,7 @@
     infiniteItemsLimit: [false, Number, Infinity]
     infiniteTrigger: [false, Number, .9]
     infiniteRateLimit: [false, Number, 1]
+    infiniteStep: [false, Number, 10]
     initPage: [false, Number, 1]
     maxSubscriptions: [false, Number, 20]
     navTemplate: [false, String, "_pagesNavCont"]
@@ -150,6 +151,9 @@
     @queue = []
     @nextPageCount = @now()
     @groundDB = Package["ground:db"]?
+    if @infinite
+      @sess "limit", 10
+      @lastOffsetHeight = 0
     if @maxSubscriptions < 1
       @maxSubscriptions = 1
     @setTemplates()
@@ -795,6 +799,8 @@
       _.throttle ->
         t = @infiniteTrigger
         oh = document.body.offsetHeight
+        return  if @lastOffsetHeight? and @lastOffsetHeight > oh
+        @lastOffsetHeight = oh
         if t > 1
           l = oh - t
         else if t > 0
@@ -802,9 +808,12 @@
         else
           return
         if (window.innerHeight + window.scrollY) >= l
+          @sess("limit", @sess("limit") + @infiniteStep)
+          ###
           if @lastPage < @sess "totalPages"
             console.log "i want page #{@lastPage + 1}"
             @sess("currentPage", @lastPage + 1)
+          ###
       , @infiniteRateLimit * 1000
     ), @
   
@@ -895,8 +904,8 @@
         c = @Collection.find({},
           fields: @fields
           sort: @sort
-          skip: if @infiniteItemsLimit isnt Infinity and n > @infiniteItemsLimit then n - @infiniteItemsLimit else 0
-          limit: @infiniteItemsLimit
+          skip: if n > @infiniteItemsLimit then n - @infiniteItemsLimit else 0
+          limit: @sess("limit") or @infiniteItemsLimit
         )
       else
         c = @Collection.find(
