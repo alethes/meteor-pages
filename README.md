@@ -62,6 +62,14 @@ and HTML:
 
 Of course, you can use any variable to store the object returned by `new Meteor.Pagination()`, not necessarily `Pages`.
 
+As for the customizations, there's a multitude of options. You'll most likely want to define your own template for the paginated items. When you do, you can pass it's name to the `Meteor.Pagination` constructor:
+
+`
+Pages = new Meteor.Pagination("collection-name", {
+  itemTemplate: "myItemTemplate"
+})
+`
+
 Settings
 --------
 Settings can be passed as a second argument to `Meteor.Pagination()`. Many of them can be changed on the client-side, causing an immediate redraw. Unless stated otherwise, user-defined functions are called in the context of the *Pagination* object.
