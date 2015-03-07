@@ -45,9 +45,9 @@ Basic usage
 -----------
 JavaScript/CoffeeScript (in common code, running on both the server and the client):
 
-`
-Pages = new Meteor.Pagination("collection-name")
-`
+```js
+Pages = new Meteor.Pagination("collection-name");
+```
 
 and HTML:
 ```html
@@ -64,11 +64,11 @@ Of course, you can use any variable to store the object returned by `new Meteor.
 
 As for the customizations, there's a multitude of options. You'll most likely want to define your own template for the paginated items. When you do, you can pass it's name to the `Meteor.Pagination` constructor:
 
-`
+```js
 Pages = new Meteor.Pagination("collection-name", {
   itemTemplate: "myItemTemplate"
 })
-`
+```
 
 Settings
 --------
@@ -78,22 +78,28 @@ There are two ways to modify settings:
 
 1. In common code, during declaration (client and server):
 
-```CoffeeScript:
-@Pages = new Meteor.Pagination "collection-name",
-    perPage: 20
-    sort: 
-        title: 1
-    filters: 
-        count: 
-            $gt: 10
+```js
+this.Pages = new Meteor.Pagination("collection-name", {
+  perPage: 20,
+  sort: {
+    title: 1
+  },
+  filters: {
+    count: {
+      $gt: 10
+    }
+  }
+});
 ```
 2. Client-side code / common code (client and server), after declaration:
 
-```CoffeeScript:
-Pages.set
-  perPage: 10
-  sort:
+```js
+Pages.set({
+  perPage: 10,
+  sort: {
     title: -1
+  }
+});
 ```
 
 Available to the client:
