@@ -43,7 +43,7 @@ Meteorite:
 
 Basic usage
 -----------
-JavaScript/CoffeScript (in common code, running on both the server and the client):
+JavaScript/CoffeeScript (in common code, running on both the server and the client):
 
 `
 Pages = new Meteor.Pagination("collection-name")
