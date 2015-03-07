@@ -46,7 +46,7 @@ Basic usage
 JavaScript/CoffeeScript (in common code, running on both the server and the client):
 
 ```js
-Pages = new Meteor.Pagination("collection-name");
+this.Pages = new Meteor.Pagination("collection-name");
 ```
 
 and HTML:
@@ -65,7 +65,7 @@ Of course, you can use any variable to store the object returned by `new Meteor.
 As for the customizations, there's a multitude of options. You'll most likely want to define your own template for the paginated items. When you do, you can pass it's name to the `Meteor.Pagination` constructor:
 
 ```js
-Pages = new Meteor.Pagination("collection-name", {
+this.Pages = new Meteor.Pagination("collection-name", {
   itemTemplate: "myItemTemplate"
 })
 ```
