@@ -70,6 +70,10 @@ this.Pages = new Meteor.Pagination("collection-name", {
 })
 ```
 
+Live help
+---------
+Do you need some assistance with Meteor development? [I'm happy to help.](https://hackhands.com/alethes)
+
 Settings
 --------
 Settings can be passed as a second argument to `Meteor.Pagination()`. Many of them can be changed on the client-side, causing an immediate redraw. Unless stated otherwise, user-defined functions are called in the context of the *Pagination* object.
@@ -185,8 +189,3 @@ Currently, the following examples are available in the */examples* directory:
 Todos
 -----
 + Tests
-
-Support
--------
-If you find this package useful, please support its development:
-[https://www.gittip.com/alethes/](https://www.gittip.com/alethes/)
