@@ -14,6 +14,12 @@ Reactive, multiple collections - [http://pages-multi.meteor.com/](http://pages2.
 
 Infinite scrolling - [http://pages3.meteor.com/](http://pages3.meteor.com/)
 
+
+Live help
+---------
+
+Do you need some assistance with Meteor development? [I'm happy to help.](https://www.codementor.io/alethes)
+
 Features
 --------
 
@@ -69,10 +75,6 @@ this.Pages = new Meteor.Pagination("collection-name", {
   itemTemplate: "myItemTemplate"
 })
 ```
-
-Live help
----------
-Do you need some assistance with Meteor development? [I'm happy to help.](https://hackhands.com/alethes)
 
 Settings
 --------
