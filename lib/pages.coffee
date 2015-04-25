@@ -45,6 +45,7 @@
     pageTemplate: [false, String, "_pagesPageCont"]
     rateLimit: [false, Number, 1]
     routeSettings: [false, Match.Optional(Function), undefined]
+    scrollBoxSelector: [ String, undefined ]
     table: [false, Match.OneOf(Boolean, Object), false]
     tableItemTemplate: [false, String, "_pagesTableItem"]
     tableTemplate: [false, String, "_pagesTable"]
@@ -163,7 +164,8 @@
       Meteor.userId?()
       @countPages()
       @reload()
-    @setInfiniteTrigger()  if @infinite
+    Template[@templateName].onRendered =>
+      @setInfiniteTrigger() if @infinite
   
   #Stops all subscriptions and reloads the current page, provided it's available and @resetOnReload isn't true.
   
@@ -795,10 +797,12 @@
       @sess "currentPage", n
   
   setInfiniteTrigger: ->
-    $(window).scroll _.bind (
+    @scrollBoxSelector = @scrollBoxSelector || window
+    @scrollBox = $(@scrollBoxSelector)
+    @scrollBox.scroll _.bind (
       _.throttle ->
         t = @infiniteTrigger
-        oh = document.body.offsetHeight
+        oh = @scrollBox[0].scrollHeight
         return  if @lastOffsetHeight? and @lastOffsetHeight > oh
         @lastOffsetHeight = oh
         if t > 1
@@ -807,13 +811,16 @@
           l = oh * t
         else
           return
-        if (window.innerHeight + window.scrollY) >= l
+
+        if (@scrollBox.scrollTop() + @scrollBox[0].offsetHeight >= l)
           @sess("limit", @sess("limit") + @infiniteStep)
+          
           ###
           if @lastPage < @sess "totalPages"
             console.log "i want page #{@lastPage + 1}"
             @sess("currentPage", @lastPage + 1)
           ###
+          
       , @infiniteRateLimit * 1000
     ), @
   
