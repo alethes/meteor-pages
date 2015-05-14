@@ -24,6 +24,7 @@
     routerTemplate: [true, String, "pages"]
     routerLayout: [true, Match.Optional(String), undefined]
     sort: [true, Object, {}]
+    infiniteCont: [true, Match.Optional(Match.OneOf(String, Object)), undefined] #Defaults to window
 
     # Unavailable to the client after initialization
 
@@ -34,7 +35,6 @@
     infinite: [false, Boolean, false]
     infiniteItemsLimit: [false, Number, Infinity]
     infiniteTrigger: [false, Number, .9]
-    infiniteCont: [false, Match.OneOf(String, Object), undefined] #Defaults to window
     infiniteRateLimit: [false, Number, 1]
     infiniteStep: [false, Number, 10]
     initPage: [false, Number, 1]
@@ -348,6 +348,7 @@
 
       # Check the type of the value against the @settings array
       if @settings[k]?[1]? and @settings[k]?[1] isnt true
+        console.log 'beforeCheck', v, typeof(v)
         check v, @settings[k][1]
 
       @sanitizeRegexObj v
@@ -798,10 +799,12 @@
 
   setInfiniteTrigger: ->
     @infiniteCont = @infiniteCont || window
+    console.log @infiniteCont
     @scrollBox = $(@infiniteCont)
     @scrollBox.scroll _.bind (
       _.throttle ->
         t = @infiniteTrigger
+        console.log @infiniteCont
         oh = @scrollBox[0].scrollHeight
         return  if @lastOffsetHeight? and @lastOffsetHeight > oh
         @lastOffsetHeight = oh
