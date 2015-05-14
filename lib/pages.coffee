@@ -34,7 +34,7 @@
     infinite: [false, Boolean, false]
     infiniteItemsLimit: [false, Number, Infinity]
     infiniteTrigger: [false, Number, .9]
-    infiniteCont: [false, Match.Optional(String), undefined] #Defaults to window
+    infiniteCont: [false, Match.OneOf(String, Object), undefined] #Defaults to window
     infiniteRateLimit: [false, Number, 1]
     infiniteStep: [false, Number, 10]
     initPage: [false, Number, 1]
