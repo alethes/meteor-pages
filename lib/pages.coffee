@@ -818,7 +818,6 @@
           return
 
         if (@scrollBox.scrollTop() + @scrollBox[0].offsetHeight >= l)
-          console.log 'Next Page!',@scrollBox, @scrollBox.scrollTop(), @scrollBox[0].offsetHeight
           @sess("limit", @sess("limit") + @infiniteStep)
 
           ###
