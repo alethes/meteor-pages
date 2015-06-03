@@ -94,6 +94,10 @@ this.Pages = new Meteor.Pagination("collection-name", {
     count: {
       $gt: 10
     }
+  },
+  availableSettings: {
+    perPage: true,
+    sort: true
   }
 });
 ```
