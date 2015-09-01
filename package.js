@@ -1,8 +1,8 @@
 Package.describe({
-  "name": "alethes:pages",
+  "name": "electronifie:pages",
   "summary": "State of the art, out of the box Meteor pagination",
   "version": "1.8.4",
-  "git": "https://github.com/alethes/meteor-pages"
+  "git": "https://github.com/electronifie/meteor-pages"
 });
 
 Package.onUse(function(api){
@@ -39,7 +39,7 @@ Package.onUse(function(api){
 
 Package.onTest(function(api){
     api.use([
-        "alethes:pages"
+        "electronifie:pages"
     ]);
 
     api.addFiles([
