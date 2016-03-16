@@ -46,6 +46,7 @@
     rateLimit: [false, Number, 1]
     routeSettings: [false, Match.Optional(Function), undefined]
     scrollBoxSelector: [ String, undefined ]
+    scrollContentSelector: [ String, undefined ]
     table: [false, Match.OneOf(Boolean, Object), false]
     tableItemTemplate: [false, String, "_pagesTableItem"]
     tableTemplate: [false, String, "_pagesTable"]
