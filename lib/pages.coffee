@@ -798,11 +798,13 @@
   
   setInfiniteTrigger: ->
     @scrollBoxSelector = @scrollBoxSelector || window
+    @scrollContentSelector = @scrollContentSelector || 'body'
     @scrollBox = $(@scrollBoxSelector)
+    @scrollContent = $(@scrollContentSelector)
     @scrollBox.scroll _.bind (
       _.throttle ->
         t = @infiniteTrigger
-        oh = @scrollBox[0].scrollHeight
+        oh = @scrollContent[0].scrollHeight
         return  if @lastOffsetHeight? and @lastOffsetHeight > oh
         @lastOffsetHeight = oh
         if t > 1
@@ -811,8 +813,7 @@
           l = oh * t
         else
           return
-
-        if (@scrollBox.scrollTop() + @scrollBox[0].offsetHeight >= l)
+        if (@scrollBox.scrollTop() + @scrollContent[0].offsetHeight >= l)
           @sess("limit", @sess("limit") + @infiniteStep)
           
           ###
