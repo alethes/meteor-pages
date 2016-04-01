@@ -46,7 +46,6 @@ Template._pagesPage.helpers
 
 Template._pagesNav.helpers
   show: ->
-    console.log Template.parentData(), Template.instance()
     @fastRender or (not @infinite and 1 < @sess "totalPages")
   link: ->
     self = @_p
