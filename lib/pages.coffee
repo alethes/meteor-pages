@@ -8,7 +8,7 @@
     divWrapper: [true, Match.OneOf(
       Match.Optional(String)
       Match.Optional(Boolean)
-    ), "pagesCont"] #If defined, should be a name of the wrapper's CSS classname
+    ), "pagesCont"] #If defined, should be the wrapper's CSS classname
     fields: [true, Object, {}]
     filters: [true, Object, {}]
     itemTemplate: [true, String, "_pagesItemDefault"]
@@ -164,6 +164,7 @@
       Meteor.userId?()
       @countPages()
       @reload()
+    @templateName ?= @name
     Template[@templateName].onRendered =>
       @setInfiniteTrigger() if @infinite
   
@@ -428,7 +429,7 @@
     
     # Create a collection based on the instance's unique id
     
-    #@PaginatedCollection = new Mongo.Collection @id
+    # @PaginatedCollection = new Mongo.Collection @id
   
   linkTo: (page)->
     if Router.current()?.params
@@ -507,15 +508,15 @@
     if @table and @itemTemplate is "_pagesItemDefault"
       @itemTemplate = @tableItemTemplate
     
-    # Create a set of template prefixed by the unique id of this pagination instance
-    # The helper and events are set to those of the base versions of those templates (captured by controllers.coffee)
-    
     for i in [@navTemplate, @pageTemplate, @itemTemplate, @tableTemplate]
       tn = @id + i
       Template[tn] = new Blaze.Template "Template.#{tn}", Template[i].renderFunction
-      Template[tn].helpers _TemplateHelpers[i]
-      Template[tn].events _TemplateEvents[i]
-      Template[tn].helpers pagesData: @
+      Template[tn].__eventMaps = Template[tn].__eventMaps.concat Template[i].__eventMaps
+      helpers = pagesData: @
+      _.each Template[i].__helpers, (helper, name) =>
+        if name[0] is " "
+          helpers[name.slice(1)] = _.bind helper, @ 
+      Template[tn].helpers helpers
       
     # Set our helpers on the main template set for this pagination  
       

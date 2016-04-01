@@ -1,7 +1,7 @@
 Package.describe({
   "name": "alethes:pages",
   "summary": "State of the art, out of the box Meteor pagination",
-  "version": "1.8.4",
+  "version": "1.8.5",
   "git": "https://github.com/alethes/meteor-pages"
 });
 
@@ -32,9 +32,12 @@ Package.onUse(function(api){
     api.addFiles([
         "client/templates.html",
         "client/controllers.coffee",
-        "client/main.css",
-        "public/loader.gif"
+        "client/main.css"
     ], "client");
+
+    api.addAssets([
+        "public/loader.gif"
+    ], ["client"]);
 });
 
 Package.onTest(function(api){
