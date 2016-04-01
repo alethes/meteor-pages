@@ -42,6 +42,8 @@ Package.onUse(function(api){
 
 Package.onTest(function(api){
     api.use([
+        "meteor-platform",
+        "coffeescript",
         "alethes:pages"
     ]);
 
