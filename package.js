@@ -13,6 +13,7 @@ Package.onUse(function(api){
         "tracker",
         "underscore",
         "coffeescript",
+        "ecmascript",
         "mongo",
         "ejson"
     ]);
