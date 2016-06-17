@@ -103,7 +103,7 @@
   
   constructor: (collection, settings = {}) ->
     unless @ instanceof Meteor.Pagination
-      throw new Meteor.Error "missing-new", "The Meteor.Pagination instance has to be initiated with `new`"
+      throw new Meteor.Error "missing-new", "The Meteor.Pagination instance has to be initiated with 'new'"
     
     # Instance variables
     
