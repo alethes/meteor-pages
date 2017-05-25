@@ -23,7 +23,7 @@
     router: [true, Match.Optional(String), undefined] #Can be any type. Use only in comparisons. Expects String or Boolean
     routerTemplate: [true, String, "pages"]
     routerLayout: [true, Match.Optional(String), undefined]
-    sort: [true, Object, {}]
+    sort: [true, Match.OneOf(Object, Array), {}]
     
     # Unavailable to the client after initialization
     
