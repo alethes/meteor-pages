@@ -112,7 +112,7 @@ Pages.set({
 });
 ```
 
-Available to the client:
+Available to the client anytime:
 + **dataMargin (*Number*, default = 3)** - determines how many neighboring pages on each side should be prefetched for seamless transition after loading the current page. Prefetching stops when the subscription limit (imposed by **maxSubscriptions**) is reached.
 + **filters (*Object*, default = {})** - MongoDB find query object, eg. `{name: {$lt: 5}}`
 + **itemTemplate (*String*, default = "paginateItemDefault")** - name of the template to use for items. The default template simply lists all attributes of an item
@@ -133,7 +133,7 @@ Available to the client:
 + **sort (*Object*, default = {})** - MongoDB sort determining object, eg. {name: 1}
 + **templateName (*String*, default = "")** - A name of the template to use. Defaults to the collection's name.
 
-Unavailable to the client:
+Unavailable to the client and not changeable on server either after pagination object is initialized:
 + **auth (*Function*, default = undefined)** - authorization function called by the built-in publication method with the following arguments:
    - *skip* - precalculated number of items to skip based on the number of page being published. Useful when returning a cursor.
    - *subscription* - the Meteor subscription object (*this* in *Meteor.publish()*). **In authenticated connections, *subscription.userId* holds the currently signed-in user's *_id*. Otherwise, it's *null*.**
