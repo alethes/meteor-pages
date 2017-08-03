@@ -46,6 +46,7 @@
     rateLimit: [false, Number, 1]
     routeSettings: [false, Match.Optional(Function), undefined]
     scrollBoxSelector: [ String, undefined ]
+    scrollContentSelector: [ String, undefined ]
     table: [false, Match.OneOf(Boolean, Object), false]
     tableItemTemplate: [false, String, "_pagesTableItem"]
     tableTemplate: [false, String, "_pagesTable"]
@@ -799,11 +800,13 @@
   
   setInfiniteTrigger: ->
     @scrollBoxSelector = @scrollBoxSelector || window
+    @scrollContentSelector = @scrollContentSelector || 'body'
     @scrollBox = $(@scrollBoxSelector)
+    @scrollContent = $(@scrollContentSelector)
     @scrollBox.scroll _.bind (
       _.throttle ->
         t = @infiniteTrigger
-        oh = @scrollBox[0].scrollHeight
+        oh = @scrollContent[0].scrollHeight
         return  if @lastOffsetHeight? and @lastOffsetHeight > oh
         @lastOffsetHeight = oh
         if t > 1
@@ -812,8 +815,7 @@
           l = oh * t
         else
           return
-
-        if (@scrollBox.scrollTop() + @scrollBox[0].offsetHeight >= l)
+        if (@scrollBox.scrollTop() + @scrollContent[0].offsetHeight >= l)
           @sess("limit", @sess("limit") + @infiniteStep)
           
           ###
