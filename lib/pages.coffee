@@ -395,6 +395,7 @@
   setId: (name) ->
     if @templateName
       name = @templateName
+    name = name.replace(".","_")
     while name of Pages::instances
       n = name.match /[0-9]+$/
       if n?
@@ -469,7 +470,7 @@
                 self.routeSettings @
               Tracker.nonreactive =>
                 self.onNavClick page
-              @next()               
+              @next()
         
         # Create one or more routes for the home (first) page
               
@@ -496,7 +497,7 @@
         FastRender.route pr, (params) ->
           @subscribe self.id, parseInt params.page
         FastRender.route @homeRoute, ->
-          @subscribe self.id, 1  
+          @subscribe self.id, 1
 
   isEmpty: ->
     @isReady() and @Collection.find(_.object [["_#{@id}_i", 0]]).count() is 0
@@ -516,7 +517,7 @@
       helpers = pagesData: @
       _.each Template[i].__helpers, (helper, name) =>
         if name[0] is " "
-          helpers[name.slice(1)] = _.bind helper, @ 
+          helpers[name.slice(1)] = _.bind helper, @
       Template[tn].helpers helpers
       
     # Set our helpers on the main template set for this pagination  
@@ -599,7 +600,7 @@
       
       filters = get "filters"
       
-      options = 
+      options =
         sort: get "sort"
         fields: get "fields"
         skip: skip
@@ -657,7 +658,7 @@
         doc["_#{@id}_p"] = page
         doc["_#{@id}_i"] = at
         id = doc._id
-        delete doc._id  
+        delete doc._id
         # Add to @Collection
         query().forEach (o, i) =>
           if i is at
@@ -874,7 +875,7 @@
       @sess "ready", true
   
   checkInitPage: ->
-    if @init and !@initPage 
+    if @init and !@initPage
       if @router
         Router.current()?.route?.getName()
         try
@@ -897,7 +898,7 @@
       
       # Request data for the page
       
-      if page <= total
+      if !total? or (page <= total)
         @requestPage page
         @queueNeighbors page
         @checkQueue()
