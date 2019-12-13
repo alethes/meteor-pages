@@ -1,7 +1,7 @@
 Meteor Pages
 ============
 
-State of the art, out of the box Meteor pagination
+Out-of-the-box Meteor pagination
 --------------------------------------------------
 
 Live demos: 
